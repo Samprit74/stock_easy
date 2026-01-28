@@ -6,24 +6,23 @@ import {
   Tooltip,
 } from "recharts";
 
-type PieDataPoint = {
-  name: string;
-  value: number;
-};
-
-type RevenuePieChartProps = {
-  data: PieDataPoint[];
+type Props = {
+  data: { name: string; value: number }[];
 };
 
 const COLORS = ["#FF7A00", "#FFB366", "#FFD1A3", "#FFE6CC"];
 
-const RevenuePieChart = ({ data }: RevenuePieChartProps) => {
-  return (
-    <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center">
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">
-        Revenue Breakdown
-      </h2>
+const RevenuePieChart = ({ data }: Props) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground">
+        No revenue breakdown available
+      </div>
+    );
+  }
 
+  return (
+    <>
       <ResponsiveContainer width="100%" height={260}>
         <PieChart>
           <Pie
@@ -36,7 +35,7 @@ const RevenuePieChart = ({ data }: RevenuePieChartProps) => {
           >
             {data.map((_, index) => (
               <Cell
-                key={`cell-${index}`}
+                key={index}
                 fill={COLORS[index % COLORS.length]}
               />
             ))}
@@ -50,13 +49,15 @@ const RevenuePieChart = ({ data }: RevenuePieChartProps) => {
           <div key={item.name} className="flex items-center gap-2">
             <span
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+              style={{
+                backgroundColor: COLORS[index % COLORS.length],
+              }}
             />
-            <span>{item.name}</span>
+            {item.name}
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 };
 

@@ -20,11 +20,13 @@ const BuyStockContainer = () => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    if (!supplier || !itemsValid) return;
+
     try {
       setLoading(true);
 
       await createPurchase({
-        supplierId: supplier!.supplierId,
+        supplierId: supplier.supplierId,
         invoiceNo: `INV-${Date.now()}`,
         purchaseDate: new Date().toISOString().split("T")[0],
         items,
@@ -35,6 +37,7 @@ const BuyStockContainer = () => {
     } catch {
       toast({
         title: "Purchase failed",
+        description: "Unable to save purchase batch",
         variant: "destructive",
       });
     } finally {
@@ -43,12 +46,14 @@ const BuyStockContainer = () => {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-6">
-      <div className="col-span-1">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Vendor */}
+      <div className="md:col-span-1">
         <VendorSection onValidated={setSupplier} />
       </div>
 
-      <div className="col-span-3 space-y-4">
+      {/* Purchase */}
+      <div className="md:col-span-3 space-y-4">
         {!submitted && (
           <>
             <PurchaseItemsSection
@@ -60,7 +65,7 @@ const BuyStockContainer = () => {
               }}
             />
 
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>Total Quantity: {totalQty}</span>
               <span>Total Cost: ₹{totalCost.toFixed(2)}</span>
             </div>

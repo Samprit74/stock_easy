@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getMedicines } from "@/services/medicineApi";
+import { useToast } from "@/components/ui/use-toast";
 
 export type PurchaseItem = {
   medicineId: number;
@@ -29,7 +30,7 @@ type Medicine = {
   medicineName: string;
 };
 
-type PurchaseItemsSectionProps = {
+type Props = {
   onChange: (
     items: PurchaseItem[],
     valid: boolean,
@@ -46,23 +47,46 @@ const emptyItem: PurchaseItem = {
   expiryDate: "",
 };
 
-const PurchaseItemsSection = ({ onChange }: PurchaseItemsSectionProps) => {
+const PurchaseItemsSection = ({ onChange }: Props) => {
+  const { toast } = useToast();
+
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [items, setItems] = useState<PurchaseItem[]>([emptyItem]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    getMedicines().then(setMedicines);
+    const loadMedicines = async () => {
+      try {
+        setLoading(true);
+        const res = await getMedicines(0, 100);
+        setMedicines(res.items);
+      } catch {
+        toast({
+          title: "Failed to load medicines",
+          description: "Cannot add items without medicines",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMedicines();
   }, []);
 
   useEffect(() => {
-    const valid = items.every(
-      (i) =>
-        i.medicineId > 0 &&
-        i.quantity > 0 &&
-        i.buyPrice > 0 &&
-        i.manufactureDate &&
-        i.expiryDate
-    );
+    const hasItems = items.length > 0;
+
+    const valid =
+      hasItems &&
+      items.every(
+        (i) =>
+          i.medicineId > 0 &&
+          i.quantity > 0 &&
+          i.buyPrice > 0 &&
+          !!i.manufactureDate &&
+          !!i.expiryDate
+      );
 
     const totalQty = items.reduce((s, i) => s + i.quantity, 0);
     const totalCost = items.reduce(
@@ -73,7 +97,11 @@ const PurchaseItemsSection = ({ onChange }: PurchaseItemsSectionProps) => {
     onChange(items, valid, totalQty, totalCost);
   }, [items, onChange]);
 
-  const updateItem = (index: number, field: keyof PurchaseItem, value: any) => {
+  const updateItem = (
+    index: number,
+    field: keyof PurchaseItem,
+    value: any
+  ) => {
     const updated = [...items];
     updated[index] = { ...updated[index], [field]: value };
     setItems(updated);
@@ -96,6 +124,7 @@ const PurchaseItemsSection = ({ onChange }: PurchaseItemsSectionProps) => {
               onValueChange={(v) =>
                 updateItem(index, "medicineId", Number(v))
               }
+              disabled={loading}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Medicine" />
@@ -161,6 +190,7 @@ const PurchaseItemsSection = ({ onChange }: PurchaseItemsSectionProps) => {
         <Button
           onClick={() => setItems([...items, emptyItem])}
           className="w-full"
+          disabled={loading}
         >
           + Add Medicine
         </Button>

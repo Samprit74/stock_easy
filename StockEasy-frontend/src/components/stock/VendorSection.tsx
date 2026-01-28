@@ -17,30 +17,29 @@ export type SupplierPayload = {
   email: string;
 };
 
-type VendorSectionProps = {
+type Props = {
   onValidated: (supplier: SupplierPayload | null) => void;
 };
 
-const VendorSection = ({ onValidated }: VendorSectionProps) => {
+const VendorSection = ({ onValidated }: Props) => {
   const { toast } = useToast();
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-
   const [loading, setLoading] = useState(false);
-  const [validatedSupplier, setValidatedSupplier] =
+  const [validated, setValidated] =
     useState<SupplierPayload | null>(null);
 
-  const resetVendor = () => {
+  const reset = () => {
     setName("");
     setPhone("");
     setEmail("");
-    setValidatedSupplier(null);
+    setValidated(null);
     onValidated(null);
   };
 
-  const handleValidateVendor = async () => {
+  const handleValidate = async () => {
     if (!name || !phone) {
       toast({
         title: "Missing details",
@@ -52,24 +51,13 @@ const VendorSection = ({ onValidated }: VendorSectionProps) => {
 
     try {
       setLoading(true);
-
-      const response = await createSupplier({
-        name,
-        phone,
-        email,
-      });
-
-      setValidatedSupplier(response);
-      onValidated(response);
-
-      toast({
-        title: "Vendor validated",
-        description: "Vendor details saved successfully",
-      });
+      const res = await createSupplier({ name, phone, email });
+      setValidated(res);
+      onValidated(res);
+      toast({ title: "Vendor validated" });
     } catch {
       toast({
         title: "Validation failed",
-        description: "Unable to validate vendor",
         variant: "destructive",
       });
     } finally {
@@ -78,12 +66,11 @@ const VendorSection = ({ onValidated }: VendorSectionProps) => {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card>
+      <CardHeader className="flex justify-between items-center">
         <CardTitle>Vendor Details</CardTitle>
-
-        {validatedSupplier && (
-          <Button variant="outline" size="sm" onClick={resetVendor}>
+        {validated && (
+          <Button size="sm" variant="outline" onClick={reset}>
             Change
           </Button>
         )}
@@ -93,34 +80,34 @@ const VendorSection = ({ onValidated }: VendorSectionProps) => {
         <Input
           placeholder="Vendor Name"
           value={name}
+          disabled={!!validated}
           onChange={(e) => setName(e.target.value)}
-          disabled={!!validatedSupplier}
         />
 
         <Input
           placeholder="Phone"
           value={phone}
+          disabled={!!validated}
           onChange={(e) => setPhone(e.target.value)}
-          disabled={!!validatedSupplier}
         />
 
         <Input
           placeholder="Email (optional)"
           value={email}
+          disabled={!!validated}
           onChange={(e) => setEmail(e.target.value)}
-          disabled={!!validatedSupplier}
         />
 
-        {!validatedSupplier ? (
+        {!validated ? (
           <Button
-            onClick={handleValidateVendor}
-            disabled={loading}
             className="w-full"
+            onClick={handleValidate}
+            disabled={loading}
           >
             {loading ? "Validating..." : "Validate Vendor"}
           </Button>
         ) : (
-          <div className="rounded-md bg-green-50 p-3 text-green-700 text-sm">
+          <div className="rounded bg-green-50 p-2 text-sm text-green-700">
             Vendor validated ✔
           </div>
         )}

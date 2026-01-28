@@ -1,43 +1,87 @@
-import { useState } from "react";
+// components/suppliers/SuppliersContainer.tsx
+
+import { useEffect, useState } from "react";
 import SupplierForm from "./SupplierForm";
 import SupplierList from "./SupplierList";
-import { Supplier } from "@/services/supplierApi";
+import {
+  Supplier,
+  getSuppliers,
+  deleteSupplier,
+  PaginatedSuppliers,
+} from "@/services/supplierApi";
+import { useToast } from "@/components/ui/use-toast";
 
 const SuppliersContainer = () => {
+  const { toast } = useToast();
+
   const [selectedSupplier, setSelectedSupplier] =
     useState<Supplier | null>(null);
 
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const [data, setData] = useState<PaginatedSuppliers>({
+    items: [],
+    currentPage: 0,
+    totalPages: 0,
+    totalItems: 0,
+  });
+
+  const loadSuppliers = async () => {
+    try {
+      setLoading(true);
+      const res = await getSuppliers(page, 5);
+      setData(res);
+    } catch {
+      toast({
+        title: "Failed to load suppliers",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSuppliers();
+  }, [page]);
 
   const handleSuccess = () => {
     setSelectedSupplier(null);
-    setRefreshKey((prev) => prev + 1);
+    loadSuppliers();
   };
 
-  const handleEdit = (supplier: Supplier) => {
-    setSelectedSupplier(supplier);
-  };
-
-  const handleCancelEdit = () => {
-    setSelectedSupplier(null);
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteSupplier(id);
+      toast({ title: "Supplier deleted" });
+      loadSuppliers();
+    } catch {
+      toast({
+        title: "Delete failed",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <div className="grid grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Form */}
-      <div className="col-span-1">
-        <SupplierForm
-          selectedSupplier={selectedSupplier}
-          onSuccess={handleSuccess}
-          onCancelEdit={handleCancelEdit}
-        />
-      </div>
+      <SupplierForm
+        selectedSupplier={selectedSupplier}
+        onSuccess={handleSuccess}
+        onCancelEdit={() => setSelectedSupplier(null)}
+      />
 
       {/* List */}
-      <div className="col-span-2">
+      <div className="md:col-span-2">
         <SupplierList
-          key={refreshKey}
-          onEdit={handleEdit}
+          data={data}
+          loading={loading}
+          onEdit={setSelectedSupplier}
+          onDelete={handleDelete}
+          onNext={() => setPage((p) => p + 1)}
+          onPrev={() => setPage((p) => Math.max(p - 1, 0))}
         />
       </div>
     </div>

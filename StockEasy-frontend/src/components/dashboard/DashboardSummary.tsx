@@ -1,15 +1,16 @@
+// components/dashboard/DashboardSummary.tsx
+
 import { useEffect, useState } from "react";
 import StatCard from "./StatCard";
 import { useToast } from "@/components/ui/use-toast";
 import {
   getDashboardSummary,
-  DashboardSummary as DashboardSummaryType,
+  DashboardSummary as SummaryType,
 } from "@/services/dashboardApi";
 
 const DashboardSummary = () => {
   const { toast } = useToast();
-  const [summary, setSummary] =
-    useState<DashboardSummaryType | null>(null);
+  const [summary, setSummary] = useState<SummaryType | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -18,7 +19,7 @@ const DashboardSummary = () => {
         setSummary(data);
       } catch {
         toast({
-          title: "Failed to load dashboard",
+          title: "Failed to load dashboard summary",
           variant: "destructive",
         });
       }
@@ -36,10 +37,15 @@ const DashboardSummary = () => {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-      <StatCard title="Total Medicines" value={summary.totalMedicines} />
-      <StatCard title="Total Customers" value={summary.totalCustomers} />
-      <StatCard title="Total Suppliers" value={summary.totalSuppliers} />
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <StatCard
+        title="Total Medicines"
+        value={summary.totalMedicines}
+      />
+      <StatCard
+        title="Total Customers"
+        value={summary.totalCustomers}
+      />
       <StatCard
         title="Expiring Soon"
         value={summary.expiringSoon}
@@ -48,10 +54,6 @@ const DashboardSummary = () => {
       <StatCard
         title="Monthly Sales"
         value={`₹ ${summary.monthlySales}`}
-      />
-      <StatCard
-        title="Total Revenue"
-        value={`₹ ${summary.totalRevenue}`}
       />
     </div>
   );

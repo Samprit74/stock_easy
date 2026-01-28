@@ -1,3 +1,5 @@
+// components/dashboard/ExpiringList.tsx
+
 import { useEffect, useState } from "react";
 import {
   Card,
@@ -7,20 +9,20 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  getExpiringMedicines,
-  ExpiringMedicine,
-} from "@/services/dashboardApi";
+  getExpiringStock,
+  BatchItem,
+} from "@/services/batchItemApi";
 
 const ExpiringList = () => {
   const { toast } = useToast();
-  const [items, setItems] = useState<ExpiringMedicine[]>([]);
+  const [items, setItems] = useState<BatchItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await getExpiringMedicines();
+        const data = await getExpiringStock(30);
         setItems(data);
       } catch {
         toast({
@@ -57,10 +59,10 @@ const ExpiringList = () => {
         <ul className="space-y-2 text-sm">
           {items.map((item) => (
             <li
-              key={item.medicineId}
+              key={item.batchItemId}
               className="flex justify-between border-b pb-1"
             >
-              <span>{item.medicineName}</span>
+              <span>{item.medicine.medicineName}</span>
               <span className="text-red-600">
                 Exp: {item.expiryDate} | Qty: {item.quantityAvailable}
               </span>

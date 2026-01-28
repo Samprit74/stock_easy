@@ -4,11 +4,12 @@ import RevenueLineChart from "./RevenueLineChart";
 import SalesBarChart from "./SalesBarChart";
 import RevenuePieChart from "./RevenuePieChart";
 
-/**
- * Temporary static data
- * Later this will come from dashboard / reports API
- */
-const REPORT_DATA = {
+type FilterType = "all" | "last7" | "last30" | "last60";
+
+const REPORT_DATA: Record<
+  FilterType,
+  { name: string; revenue: number; sales: number }[]
+> = {
   all: [
     { name: "Jan", revenue: 14200, sales: 4000 },
     { name: "Feb", revenue: 15000, sales: 4200 },
@@ -40,20 +41,14 @@ const PIE_DATA = [
 ];
 
 const ReportsContainer = () => {
-  const [filter, setFilter] = useState<
-    "all" | "last7" | "last30" | "last60"
-  >("all");
+  const [filter, setFilter] = useState<FilterType>("all");
 
-  const chartData = useMemo(() => {
-    return REPORT_DATA[filter];
-  }, [filter]);
+  const chartData = useMemo(() => REPORT_DATA[filter], [filter]);
 
   return (
     <div className="space-y-10">
-      {/* Filters */}
       <ReportsFilters value={filter} onChange={setFilter} />
 
-      {/* Revenue Line Chart */}
       <div className="bg-white rounded-2xl shadow-md p-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-700">
           Revenue Trend
@@ -61,7 +56,6 @@ const ReportsContainer = () => {
         <RevenueLineChart data={chartData} />
       </div>
 
-      {/* Bar + Pie */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-white rounded-2xl shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-700">

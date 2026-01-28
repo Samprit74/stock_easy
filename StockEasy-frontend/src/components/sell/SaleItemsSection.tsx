@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getMedicines } from "@/services/medicineApi";
+import { useToast } from "@/components/ui/use-toast";
 
 export type SaleItem = {
   medicineId: number;
@@ -27,7 +28,7 @@ type Medicine = {
   medicineName: string;
 };
 
-type SaleItemsSectionProps = {
+type Props = {
   onChange: (
     items: SaleItem[],
     valid: boolean,
@@ -42,18 +43,43 @@ const emptyItem: SaleItem = {
   sellPrice: 0,
 };
 
-const SaleItemsSection = ({ onChange }: SaleItemsSectionProps) => {
+const SaleItemsSection = ({ onChange }: Props) => {
+  const { toast } = useToast();
+
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [items, setItems] = useState<SaleItem[]>([emptyItem]);
+  const [loading, setLoading] = useState(false);
 
+  // Load medicines (first page only)
   useEffect(() => {
-    getMedicines().then(setMedicines);
+    const loadMedicines = async () => {
+      try {
+        setLoading(true);
+        const res = await getMedicines(0, 100); // dropdown needs list
+        setMedicines(res.items);
+      } catch {
+        toast({
+          title: "Failed to load medicines",
+          description: "Cannot add sale items without medicines",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMedicines();
   }, []);
 
+  // Recalculate totals & validity
   useEffect(() => {
-    const valid = items.every(
-      (i) => i.medicineId > 0 && i.quantity > 0 && i.sellPrice > 0
-    );
+    const hasItems = items.length > 0;
+
+    const valid =
+      hasItems &&
+      items.every(
+        (i) => i.medicineId > 0 && i.quantity > 0 && i.sellPrice > 0
+      );
 
     const totalQty = items.reduce((s, i) => s + i.quantity, 0);
     const totalAmount = items.reduce(
@@ -64,7 +90,11 @@ const SaleItemsSection = ({ onChange }: SaleItemsSectionProps) => {
     onChange(items, valid, totalQty, totalAmount);
   }, [items, onChange]);
 
-  const updateItem = (index: number, field: keyof SaleItem, value: any) => {
+  const updateItem = (
+    index: number,
+    field: keyof SaleItem,
+    value: number
+  ) => {
     const updated = [...items];
     updated[index] = { ...updated[index], [field]: value };
     setItems(updated);
@@ -87,6 +117,7 @@ const SaleItemsSection = ({ onChange }: SaleItemsSectionProps) => {
               onValueChange={(v) =>
                 updateItem(index, "medicineId", Number(v))
               }
+              disabled={loading}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Medicine" />
@@ -136,6 +167,7 @@ const SaleItemsSection = ({ onChange }: SaleItemsSectionProps) => {
         <Button
           className="w-full"
           onClick={() => setItems([...items, emptyItem])}
+          disabled={loading}
         >
           + Add Item
         </Button>

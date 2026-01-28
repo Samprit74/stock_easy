@@ -1,63 +1,38 @@
-import { useEffect, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+// components/customers/CustomerList.tsx
+
 import CustomerCard from "./CustomerCard";
+import { Button } from "@/components/ui/button";
 import {
-  getCustomers,
-  deleteCustomer,
   Customer,
+  PaginatedCustomers,
 } from "@/services/customerApi";
 
-type CustomerListProps = {
+type Props = {
+  data: PaginatedCustomers;
+  loading: boolean;
   onEdit: (customer: Customer) => void;
+  onDelete: (id: number) => void;
+  onNext: () => void;
+  onPrev: () => void;
 };
 
-const CustomerList = ({ onEdit }: CustomerListProps) => {
-  const { toast } = useToast();
-
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchCustomers = async () => {
-    try {
-      setLoading(true);
-      const data = await getCustomers();
-      setCustomers(data);
-    } catch {
-      toast({
-        title: "Failed to load customers",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  const handleDelete = async (customerId: number) => {
-    try {
-      await deleteCustomer(customerId);
-      toast({ title: "Customer deleted" });
-      fetchCustomers();
-    } catch {
-      toast({
-        title: "Delete failed",
-        variant: "destructive",
-      });
-    }
-  };
-
+const CustomerList = ({
+  data,
+  loading,
+  onEdit,
+  onDelete,
+  onNext,
+  onPrev,
+}: Props) => {
   if (loading) {
     return (
       <div className="text-sm text-muted-foreground">
-        Loading...
+        Loading customers...
       </div>
     );
   }
 
-  if (customers.length === 0) {
+  if (data.items.length === 0) {
     return (
       <div className="text-sm text-muted-foreground">
         No customers found
@@ -66,15 +41,42 @@ const CustomerList = ({ onEdit }: CustomerListProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {customers.map((customer) => (
-        <CustomerCard
-          key={customer.customerId}
-          customer={customer}
-          onEdit={onEdit}
-          onDelete={handleDelete}
-        />
-      ))}
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {data.items.map((customer) => (
+          <CustomerCard
+            key={customer.customerId}
+            customer={customer}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-between items-center">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onPrev}
+          disabled={data.currentPage === 0}
+        >
+          Previous
+        </Button>
+
+        <span className="text-sm text-muted-foreground">
+          Page {data.currentPage + 1} of {data.totalPages}
+        </span>
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onNext}
+          disabled={data.currentPage + 1 >= data.totalPages}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 };

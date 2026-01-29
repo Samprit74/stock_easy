@@ -2,11 +2,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import { AuthProvider } from "@/context/AuthContext";
+import ProtectedRoute from "@/routes/ProtectedRoute";
 
 /* Pages */
 import LandingPage from "./pages/Landing/LandingPage";
-
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
@@ -28,32 +30,87 @@ const App1 = () => (
       <Toaster />
       <Sonner />
 
-      <BrowserRouter
-      future={{
-    v7_startTransition: true,
-    v7_relativeSplatPath: true,
-  }}
-      >
-        <Routes>
-          {/* Public */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          {/* App */}
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/buy-stock" element={<BuyStockPage />} />
-          <Route path="/sell-stock" element={<SellStockPage />} />
-          <Route path="/medicines" element={<MedicinesPage />} />
-          <Route path="/customers" element={<CustomersPage />} />
-          <Route path="/suppliers" element={<SuppliersPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+            {/* Common (ADMIN + STAFF) */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/buy-stock"
+              element={
+                <ProtectedRoute>
+                  <BuyStockPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sell-stock"
+              element={
+                <ProtectedRoute>
+                  <SellStockPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/medicines"
+              element={
+                <ProtectedRoute>
+                  <MedicinesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/customers"
+              element={
+                <ProtectedRoute>
+                  <CustomersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Fallback */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+            {/* ADMIN ONLY */}
+            <Route
+              path="/suppliers"
+              element={
+                <ProtectedRoute roles={["ROLE_ADMIN"]}>
+                  <SuppliersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute roles={["ROLE_ADMIN"]}>
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Fallback */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

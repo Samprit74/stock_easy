@@ -1,33 +1,32 @@
-// src/services/api.ts
+import { getToken, clearAuth } from "./authStorage";
 
 const BASE_URL = "http://localhost:8082/api";
 
-/**
- * Generic API request helper
- * Matches Spring Boot REST APIs
- */
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const token = getToken();
+
   const response = await fetch(`${BASE_URL}${endpoint}`, {
-    method: options.method || "GET",
+    ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
-    body: options.body,
   });
 
+  if (response.status === 401 || response.status === 403) {
+    clearAuth();
+    window.location.href = "/login";
+    throw new Error("Session expired");
+  }
+
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || "API request failed");
+    throw new Error("API request failed");
   }
 
-  // Handle empty response (DELETE, etc.)
-  if (response.status === 204) {
-    return null as T;
-  }
-
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  return text ? (JSON.parse(text) as T) : ({} as T);
 }

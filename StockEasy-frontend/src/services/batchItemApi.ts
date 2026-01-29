@@ -1,11 +1,5 @@
-// src/services/batchItemApi.ts
-
 import { apiRequest } from "./api";
 
-/**
- * Medicine info inside BatchItem
- * Matches backend Medicine entity (nested)
- */
 export interface BatchMedicine {
   medicineId: number;
   medicineName: string;
@@ -13,53 +7,19 @@ export interface BatchMedicine {
   category: string;
 }
 
-/**
- * Batch item type
- * Matches backend BatchItem entity response
- */
 export interface BatchItem {
   batchItemId: number;
   quantityAvailable: number;
-  manufactureDate: string; // YYYY-MM-DD
-  expiryDate: string;      // YYYY-MM-DD
+  manufactureDate: string;
+  expiryDate: string;
   buyPrice: number;
   medicine: BatchMedicine;
 }
 
-/**
- * Get expiring stock
- * Backend: GET /api/batch-items/expiring-soon?days=30
- *
- * @param days number of days from today (default: 30)
- */
-export async function getExpiringStock(
-  days: number = 30
-): Promise<BatchItem[]> {
-  try {
-    const response = await apiRequest<BatchItem[]>(
-      `/batch-items/expiring-soon?days=${days}`
-    );
-
-    return response ?? [];
-  } catch (error) {
-    console.error("Failed to fetch expiring stock:", error);
-    return [];
-  }
+export function getExpiringStock(days = 30): Promise<BatchItem[]> {
+  return apiRequest(`/batch-items/expiring-soon?days=${days}`);
 }
 
-/**
- * Get expired stock
- * Backend: GET /api/batch-items/expired
- */
-export async function getExpiredStock(): Promise<BatchItem[]> {
-  try {
-    const response = await apiRequest<BatchItem[]>(
-      "/batch-items/expired"
-    );
-
-    return response ?? [];
-  } catch (error) {
-    console.error("Failed to fetch expired stock:", error);
-    return [];
-  }
+export function getExpiredStock(): Promise<BatchItem[]> {
+  return apiRequest("/batch-items/expired");
 }

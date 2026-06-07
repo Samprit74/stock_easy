@@ -6,6 +6,7 @@ import java.util.List;
 public class PurchaseRequestDto {
 
     private Long supplierId;
+    private String batchNumber;
     private String invoiceNo;
     private LocalDate purchaseDate;
     private List<PurchaseItemDto> items;
@@ -29,6 +30,14 @@ public class PurchaseRequestDto {
 
     public void setSupplierId(Long supplierId) {
         this.supplierId = supplierId;
+    }
+
+    public String getBatchNumber() {
+        return batchNumber;
+    }
+
+    public void setBatchNumber(String batchNumber) {
+        this.batchNumber = batchNumber;
     }
 
     public String getInvoiceNo() {

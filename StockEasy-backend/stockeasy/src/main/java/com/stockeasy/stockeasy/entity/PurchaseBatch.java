@@ -15,6 +15,8 @@ public class PurchaseBatch {
     @JoinColumn(name = "supplier_id")
     private Supplier supplier;
 
+    private String batchNumber;
+
     private String invoiceNo;
     private LocalDate purchaseDate;
 
@@ -41,6 +43,14 @@ public class PurchaseBatch {
 
     public void setSupplier(Supplier supplier) {
         this.supplier = supplier;
+    }
+
+    public String getBatchNumber() {
+        return batchNumber;
+    }
+
+    public void setBatchNumber(String batchNumber) {
+        this.batchNumber = batchNumber;
     }
 
     public String getInvoiceNo() {

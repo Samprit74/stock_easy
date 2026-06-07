@@ -9,6 +9,7 @@ public interface NearExpiryProjection {
     @Value("#{target.medicine.medicineName}")
     String getMedicineName();
 
+    @Value("#{target.batch != null ? target.batch.batchNumber : null}")
     String getBatchNumber();
 
     LocalDate getExpiryDate();

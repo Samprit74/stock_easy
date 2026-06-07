@@ -41,6 +41,7 @@ public class PurchaseController {
                 dto.getInvoiceNo(),
                 dto.getPurchaseDate()
         );
+        batch.setBatchNumber(dto.getBatchNumber());
 
         PurchaseBatch savedBatch = purchaseService.createPurchaseBatch(batch);
 

@@ -1,8 +1,10 @@
 package com.stockeasy.stockeasy.controller;
 
+import com.stockeasy.stockeasy.dto.response.ExpiredStockReportDto;
 import com.stockeasy.stockeasy.dto.response.LowStockDto;
 import com.stockeasy.stockeasy.entity.BatchItem;
 import com.stockeasy.stockeasy.service.BatchItemService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -21,6 +23,16 @@ public class BatchItemController {
     @GetMapping("/expired")
     public List<BatchItem> getExpiredStock() {
         return batchItemService.getExpiredStock(LocalDate.now());
+    }
+
+    @GetMapping("/expired-report")
+    public ExpiredStockReportDto getExpiredReport(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOf
+    ) {
+        return batchItemService.getExpiredStockReport(
+                asOf != null ? asOf : LocalDate.now()
+        );
     }
 
     @GetMapping("/expiring-soon")

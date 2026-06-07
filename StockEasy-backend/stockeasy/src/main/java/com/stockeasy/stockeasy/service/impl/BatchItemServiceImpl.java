@@ -1,5 +1,7 @@
 package com.stockeasy.stockeasy.service.impl;
 
+import com.stockeasy.stockeasy.dto.response.ExpiredStockLineDto;
+import com.stockeasy.stockeasy.dto.response.ExpiredStockReportDto;
 import com.stockeasy.stockeasy.dto.response.LowStockDto;
 import com.stockeasy.stockeasy.entity.BatchItem;
 import com.stockeasy.stockeasy.repository.BatchItemRepository;
@@ -59,5 +61,38 @@ public class BatchItemServiceImpl implements BatchItemService {
     @Override
     public List<LowStockDto> getLowStockMedicines(int threshold) {
         return batchItemRepository.findLowStockMedicines(threshold);
+    }
+
+    @Override
+    public ExpiredStockReportDto getExpiredStockReport(LocalDate asOf) {
+        List<BatchItem> expired = getExpiredStock(asOf);
+
+        List<ExpiredStockLineDto> lines = expired.stream()
+                .map(b -> {
+                    int qty = b.getQuantityAvailable();
+                    double loss = qty * b.getBuyPrice();
+                    return new ExpiredStockLineDto(
+                            b.getMedicine().getMedicineName(),
+                            b.getMedicine().getBrand(),
+                            b.getMedicine().getCategory(),
+                            b.getBatch() != null ? b.getBatch().getBatchNumber() : null,
+                            b.getExpiryDate(),
+                            qty,
+                            b.getBuyPrice(),
+                            loss
+                    );
+                })
+                .toList();
+
+        int totalUnits = lines.stream().mapToInt(ExpiredStockLineDto::quantityExpired).sum();
+        double totalLoss = lines.stream().mapToDouble(ExpiredStockLineDto::totalLoss).sum();
+
+        return new ExpiredStockReportDto(
+                asOf,
+                lines.size(),
+                totalUnits,
+                totalLoss,
+                lines
+        );
     }
 }

@@ -1,5 +1,6 @@
 package com.stockeasy.stockeasy.service;
 
+import com.stockeasy.stockeasy.dto.response.ExpiredStockReportDto;
 import com.stockeasy.stockeasy.dto.response.LowStockDto;
 import com.stockeasy.stockeasy.entity.BatchItem;
 
@@ -21,4 +22,6 @@ public interface BatchItemService {
     List<BatchItem> getByBatch(Long batchId);
 
     List<LowStockDto> getLowStockMedicines(int threshold);
+
+    ExpiredStockReportDto getExpiredStockReport(LocalDate asOf);
 }

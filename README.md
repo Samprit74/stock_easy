@@ -1,25 +1,22 @@
 # StockEasy
 
-Pharmaceutical stock management system for medicine shops.
+> **Pharmaceutical stock management for medicine shops.**
+> Track stock by batch and expiry, sell the right medicine to the right customer, and stop losing money to expired stock.
 
-Track stock by batch and expiry, sell the right medicine to the right customer, and stop losing money to expired stock. Built for pharmacy owners and their staff.
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.1-6DB33F?logo=springboot&logoColor=white)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
+![License](https://img.shields.io/badge/license-Private-lightgrey)
 
-## What's inside
-
-A monorepo with two apps:
-
-```
-stock_easy/
-├── StockEasy-backend/   Spring Boot 3.4.1 + Java 21
-├── StockEasy-frontend/  Vite + React 18 + TypeScript
-└── README.md
-```
+---
 
 ## What StockEasy does
 
 - **Records every purchase** with batch number, manufacture date, expiry date, quantity and buy price — per item
-- **Sells from the right batch** — oldest expiry first, except for regular customers who get the freshest batch
-- **Auto-discounts** near-expiry batches (20% ≤ 7 days, 10% ≤ 15, 5% ≤ 30) so they clear before they expire
+- **Sells from the right batch** — oldest expiry first (FEFO), except for regular customers who get the freshest batch
+- **Auto-discounts** near-expiry batches (20% ≤ 7 days · 10% ≤ 15 · 5% ≤ 30) so they clear before they expire
 - **Tracks each customer** by phone, counts their orders, marks them as regular after a threshold
 - **Alerts on low stock** so you know what to rebuy, per medicine
 - **Reports expired stock** with the rupee value lost
@@ -27,56 +24,188 @@ stock_easy/
 - **Enforces roles** — ADMIN manages suppliers, reports, users; STAFF runs the counter
 - **Reports** — top medicines, top customers, daily revenue, totals, all by date range
 
+---
+
+## Architecture
+
+```
+                    ┌──────────────────────────────┐
+                    │       Browser (port 8080)    │
+                    │   React 18 + TypeScript 5     │
+                    │   Vite dev server             │
+                    └──────────────┬───────────────┘
+                                   │  fetch + JWT
+                                   │  (Authorization: Bearer)
+                                   ▼
+                    ┌──────────────────────────────┐
+                    │    Spring Boot 3.4.1         │
+                    │      (port 8082)             │
+                    │  ┌────────────────────────┐  │
+                    │  │  JwtAuthFilter         │  │
+                    │  ├────────────────────────┤  │
+                    │  │  @RestController       │  │
+                    │  │  /api/auth             │  │
+                    │  │  /api/users            │  │
+                    │  │  /api/medicines        │  │
+                    │  │  /api/suppliers        │  │
+                    │  │  /api/customers        │  │
+                    │  │  /api/purchases        │  │
+                    │  │  /api/sales            │  │
+                    │  │  /api/batch-items      │  │
+                    │  │  /api/dashboard        │  │
+                    │  │  /api/discounts        │  │
+                    │  │  /api/reports          │  │
+                    │  └────────┬───────────────┘  │
+                    └───────────┼───────────────────┘
+                                │  Spring Data JPA
+                                │  (Hibernate, ddl-auto=update)
+                                ▼
+                    ┌──────────────────────────────┐
+                    │        MySQL 8               │
+                    │    Database: stockeasy_db    │
+                    └──────────────────────────────┘
+```
+
+---
+
+## Domain model
+
+```
+  ┌──────────┐        ┌───────────────┐         ┌──────────────┐
+  │   User   │        │ PurchaseBatch │         │   Supplier   │
+  │──────────│        │───────────────│         │──────────────│
+  │ id (PK)  │        │ batchId (PK)  │◄────────│ supplierId   │
+  │ username  │  1   * │ batchNumber   │         │ name         │
+  │ password  │        │ invoiceNo     │         │ phone        │
+  │ role      │        │ purchaseDate  │         │ email        │
+  │ profile…  │        │ supplierId FK │         └──────────────┘
+  └────┬─────┘        └───────┬───────┘
+       │ 1                    1 │
+       │ creates              │ contains
+       │                      ▼ *
+       │             ┌────────────────┐
+       │             │   BatchItem    │
+       │             │────────────────│
+       │             │ batchItemId(PK)│
+       │             │ batchId FK     │
+       │             │ medicineId FK  │◄──┐
+       │             │ qtyAvailable   │   │
+       │             │ mfgDate        │   │
+       │             │ expiryDate     │   │
+       │             │ buyPrice       │   │
+       │             └────────┬───────┘   │
+       │                      │ 1         │
+       │                      │ sold in   │
+       │                      ▼ *        │
+       │             ┌────────────────┐  │
+       │             │   SaleItem     │  │
+       │             │────────────────│  │
+       │             │ saleItemId(PK) │  │
+       │             │ saleId FK      │  │
+       │             │ batchItemId FK │  │
+       │             │ qtySold        │  │
+       │             │ sellPrice      │  │
+       │             └────────┬───────┘  │
+       │                      │ *        │
+       │                      │ belongs  │
+       │                      ▼ 1        │
+       │  *              ┌──────────┐    │
+       └────────────────►│   Sale   │    │
+            creates      │──────────│    │
+                        │ saleId   │    │
+                        │ saleDate │    │
+                        │ total    │    │
+                        │ returned │    │
+                        │ customerId FK  ───┐
+                        │ createdById FK ───┤
+                        └──────────┘       │
+                                             │
+                        ┌──────────┐        │
+                        │ Customer │◄───────┘
+                        │──────────│
+                        │ customerId(PK)
+                        │ name     │
+                        │ phone    │
+                        │ email    │
+                        │ totalOrders
+                        │ regularThreshold
+                        └──────────┘
+
+                        ┌──────────┐
+                        │ Medicine │ (also referenced by BatchItem)
+                        │──────────│
+                        │ medicineId(PK)
+                        │ name     │
+                        │ brand    │
+                        │ category │
+                        │ defaultSellPrice
+                        └──────────┘
+```
+
+---
+
 ## Tech stack
 
-**Backend**
-- Spring Boot 3.4.1, Java 21
-- Spring Web, Spring Data JPA, Spring Security
-- JWT auth
-- Hibernate validation
-- MySQL connector (configurable)
-- Lombok 1.18.40
-- springdoc OpenAPI (Swagger UI at `/swagger-ui.html`)
+| Layer | Stack |
+|---|---|
+| **Backend** | Spring Boot 3.4.1 · Java 21 · Spring Web · Spring Data JPA · Spring Security · JWT (jjwt 0.11.5) · Hibernate Validator · MySQL Connector · Lombok 1.18.40 · springdoc OpenAPI |
+| **Frontend** | Vite 7 · React 18 · TypeScript 5 · React Router 6 · TanStack Query · shadcn/ui · Radix UI · Tailwind CSS · lucide-react · recharts |
+| **Database** | MySQL 8 (auto-schema via Hibernate `ddl-auto=update`) |
 
-**Frontend**
-- Vite 7 + React 18 + TypeScript 5
-- React Router 6
-- TanStack Query (installed)
-- shadcn/ui + Radix + Tailwind CSS
-- lucide-react icons
-- recharts (charts)
+---
 
 ## API overview
 
-51 REST endpoints under `/api/`, grouped into 10 services:
+**51 endpoints** under `/api/`, grouped into 10 service modules:
 
 | Service | Purpose | Endpoints |
 |---|---|---|
-| **Auth** | Register, login (returns JWT) | 2 |
-| **User** | Profile CRUD + admin user management | 5 |
-| **Medicine** | Catalog CRUD + filters (category, brand, search) | 8 |
-| **Supplier** | Vendor CRUD (ADMIN only) | 5 |
-| **Customer** | Customer CRUD + by-phone lookup + search | 7 |
-| **Purchase** | Create purchase batches + history queries | 5 |
-| **Sale** | Create sale + paginated history + by-customer + my-bills + return | 6 |
-| **Stock** | Expired / expiring / by-medicine / by-batch / low-stock + dashboard summary | 7 |
-| **Discount** | Preview discount for a batch or by expiry | 2 |
-| **Report** | Top medicines, top customers, daily revenue, revenue summary (ADMIN) | 4 |
+| `auth` | Register, login (returns JWT) | 2 |
+| `users` | Profile CRUD + admin user management | 5 |
+| `medicines` | Catalog CRUD + filters (category, brand, search) | 8 |
+| `suppliers` | Vendor CRUD (ADMIN) | 5 |
+| `customers` | CustomerCRUD + by-phone lookup + search | 7 |
+| `purchases` | Create purchase batches + history | 5 |
+| `sales` | Create sale + history + by-customer + my-bills + return | 6 |
+| `batch-items` | Expired / expiring / by-medicine / by-batch / low-stock | 6 |
+| `dashboard` | Summary cards | 1 |
+| `discounts` | Preview discount for a batch or by expiry | 2 |
+| `reports` | Top medicines, top customers, daily revenue, summary (ADMIN) | 4 |
 
-All endpoints return JSON. The frontend has a typed client (`src/services/`) that maps 1:1 to these endpoints.
+All endpoints return JSON. Swagger UI: **`http://localhost:8082/swagger-ui.html`**
+
+---
 
 ## Quick start
 
-### Backend
+### 1. Database
+
+```sql
+CREATE DATABASE stockeasy_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 2. Backend configuration
+
+Edit `StockEasy-backend/stockeasy/src/main/resources/application.properties`:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/stockeasy_db?useSSL=false&allowPublicKeyRetrieval=true
+spring.datasource.username=root
+spring.datasource.password=YOUR_PASSWORD
+spring.jpa.hibernate.ddl-auto=update
+server.port=8082
+```
+
+### 3. Run the backend
 
 ```bash
 cd StockEasy-backend/stockeasy
 ./mvnw spring-boot:run
 ```
 
-Runs on `http://localhost:8082`.
+→ `http://localhost:8082`
 
-### Frontend
+### 4. Run the frontend
 
 ```bash
 cd StockEasy-frontend
@@ -84,50 +213,59 @@ npm install
 npm run dev
 ```
 
-Runs on `http://localhost:8080` and talks to the backend on `8082`.
+→ `http://localhost:8080`
 
-### Default admin
+### 5. Create your first user
 
-Register through the UI at `/register` and pick the `ADMIN` role. Login takes you to the dashboard.
+Open `http://localhost:8080`, click **Get Started**, register with role **ADMIN**. You'll land on the dashboard.
+
+---
 
 ## Project layout
 
 ```
-src/main/java/com/stockeasy/stockeasy/
-├── auth/                  auth, JWT, register/login
-├── user/                  user accounts, roles, profiles
-├── pharmacy/
-│   ├── medicine/          medicine catalog
-│   ├── supplier/          vendors
-│   ├── customer/          pharmacy customers (regular tracking)
-│   ├── purchase/          buy stock from vendor
-│   ├── stock/             batches + dashboard + discount
-│   └── sale/              sell to customer, FEFO, history
-├── report/                admin-only reports
-└── shared/                exceptions, utilities, config
+stock_easy/
+├── StockEasy-backend/                      Spring Boot 3.4.1 + Java 21
+│   └── src/main/java/com/stockeasy/stockeasy/
+│       ├── auth/                           auth, JWT, register/login
+│       ├── user/                           user accounts, roles, profiles
+│       ├── pharmacy/
+│       │   ├── medicine/                   medicine catalog
+│       │   ├── supplier/                   vendors
+│       │   ├── customer/                   pharmacy customers (regular tracking)
+│       │   ├── purchase/                   buy stock from vendor
+│       │   ├── stock/                      batches + dashboard + discount
+│       │   └── sale/                       sell to customer, FEFO, history
+│       ├── report/                         admin-only reports
+│       └── shared/                         exceptions, utilities, config
+│
+├── StockEasy-frontend/                     Vite 7 + React 18 + TypeScript 5
+│   └── src/
+│       ├── pages/                          13 routed pages
+│       ├── components/                     UI components, dashboard widgets
+│       ├── services/                       typed API client (one file per service)
+│       ├── types/                          shared TypeScript types
+│       ├── context/AuthContext.tsx          JWT-aware auth state
+│       └── routes/ProtectedRoute.tsx       role-based route guard
+│
+└── README.md
 ```
 
-```
-StockEasy-frontend/src/
-├── pages/                 13 routed pages
-├── components/            UI components, dashboard widgets
-├── services/              typed API client (one file per service)
-├── types/                 shared TypeScript types
-├── context/AuthContext.tsx
-└── routes/ProtectedRoute.tsx
-```
+---
 
 ## Roles and access
 
 | Resource | ADMIN | STAFF |
-|---|---|---|
-| Auth (login, register) | yes | yes |
-| Medicines, customers, sales, stock, discount | yes | yes |
-| Suppliers, reports, user management | **yes** | no |
-| Medicines — delete / update | **yes** | no |
-| Customers — delete | **yes** | no |
+|---|:---:|:---:|
+| Login / Register | ✓ | ✓ |
+| Dashboard, Medicines, Customers, Sales, Stock, Discounts | ✓ | ✓ |
+| Suppliers, Reports, User management | **✓** | ✗ |
+| Medicines — delete / update | **✓** | ✗ |
+| Customers — delete | **✓** | ✗ |
 
-ProtectedRoute in the frontend and SecurityConfig in the backend both enforce the same rules.
+`ProtectedRoute` (frontend) and `SecurityConfig` (backend) both enforce the same rules.
+
+---
 
 ## License
 

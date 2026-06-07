@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  getExpiringStock,
-  BatchItem,
-} from "@/services/batchItemApi";
+  getExpiringSoonStock,
+} from "@/services";
+import type { BatchItem } from "@/types";
 
 const ExpiringList = () => {
   const { toast } = useToast();
@@ -22,7 +22,7 @@ const ExpiringList = () => {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await getExpiringStock(30);
+        const data = await getExpiringSoonStock(30);
         setItems(data);
       } catch {
         toast({

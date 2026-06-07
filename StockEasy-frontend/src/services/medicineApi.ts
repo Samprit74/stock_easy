@@ -1,147 +1,62 @@
-// src/services/medicineApi.ts
+import { httpRequest } from "./httpClient";
+import type {
+  CreateMedicineRequest,
+  Medicine,
+  Page,
+  PageResponse,
+  UpdateMedicineRequest,
+} from "@/types";
 
-import { apiRequest } from "./api";
+export type { Medicine, CreateMedicineRequest, UpdateMedicineRequest } from "@/types";
 
-/**
- * Medicine type (matches backend entity)
- */
-export interface Medicine {
-  medicineId: number;
-  medicineName: string;
-  brand: string;
-  category: string;
+function toPage<T>(res: PageResponse<T>, fallbackPage: number): Page<T> {
+  return {
+    items: res.content ?? [],
+    currentPage: res.number ?? fallbackPage,
+    totalPages: res.totalPages ?? 0,
+    totalItems: res.totalElements ?? 0,
+  };
 }
 
-/**
- * Backend Page response (minimal)
- */
-interface PageResponse<T> {
-  content: T[];
-  totalPages: number;
-  totalElements: number;
-  number: number;
-  size: number;
+export function getMedicines(page = 0, size = 5): Promise<Page<Medicine>> {
+  return httpRequest<PageResponse<Medicine>>("/medicines", {
+    query: { page, size },
+  }).then((res) => toPage(res, page));
 }
 
-/**
- * Safe paginated response for frontend
- */
-export interface PaginatedMedicines {
-  items: Medicine[];
-  currentPage: number;
-  totalPages: number;
-  totalItems: number;
+export function getMedicineById(id: number): Promise<Medicine> {
+  return httpRequest<Medicine>(`/medicines/${id}`);
 }
 
-/**
- * Create medicine payload
- */
-export interface CreateMedicineRequest {
-  medicineName: string;
-  brand: string;
-  category: string;
+export function createMedicine(payload: CreateMedicineRequest): Promise<Medicine> {
+  return httpRequest<Medicine>("/medicines", {
+    method: "POST",
+    body: payload,
+  });
 }
 
-/**
- * Update medicine payload
- */
-export interface UpdateMedicineRequest {
-  medicineName: string;
-  brand: string;
-  category: string;
-}
-
-/**
- * Get medicines with pagination
- * Backend: GET /api/medicines?page=&size=
- */
-export async function getMedicines(
-  page = 0,
-  size = 5
-): Promise<PaginatedMedicines> {
-  try {
-    const response = await apiRequest<PageResponse<Medicine>>(
-      `/medicines?page=${page}&size=${size}`
-    );
-
-    return {
-      items: response.content ?? [],
-      currentPage: response.number ?? page,
-      totalPages: response.totalPages ?? 0,
-      totalItems: response.totalElements ?? 0,
-    };
-  } catch (error) {
-    console.error("Failed to fetch medicines:", error);
-
-    return {
-      items: [],
-      currentPage: page,
-      totalPages: 0,
-      totalItems: 0,
-    };
-  }
-}
-
-/**
- * Get medicine by ID
- */
-export async function getMedicineById(
-  medicineId: number
-): Promise<Medicine | null> {
-  try {
-    return await apiRequest<Medicine>(`/medicines/${medicineId}`);
-  } catch (error) {
-    console.error("Failed to fetch medicine:", error);
-    return null;
-  }
-}
-
-/**
- * Create medicine
- */
-export async function createMedicine(
-  payload: CreateMedicineRequest
-): Promise<Medicine | null> {
-  try {
-    return await apiRequest<Medicine>("/medicines", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-  } catch (error) {
-    console.error("Failed to create medicine:", error);
-    return null;
-  }
-}
-
-/**
- * Update medicine
- */
-export async function updateMedicine(
-  medicineId: number,
+export function updateMedicine(
+  id: number,
   payload: UpdateMedicineRequest
-): Promise<Medicine | null> {
-  try {
-    return await apiRequest<Medicine>(`/medicines/${medicineId}`, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    });
-  } catch (error) {
-    console.error("Failed to update medicine:", error);
-    return null;
-  }
+): Promise<Medicine> {
+  return httpRequest<Medicine>(`/medicines/${id}`, {
+    method: "PUT",
+    body: payload,
+  });
 }
 
-/**
- * Delete medicine
- */
-export async function deleteMedicine(medicineId: number): Promise<boolean> {
-  try {
-    await apiRequest<void>(`/medicines/${medicineId}`, {
-      method: "DELETE",
-    });
-    return true;
-  } catch (error) {
-    console.error("Failed to delete medicine:", error);
-    return false;
-  }
+export function deleteMedicine(id: number): Promise<void> {
+  return httpRequest<void>(`/medicines/${id}`, { method: "DELETE" });
+}
+
+export function getMedicinesByCategory(category: string): Promise<Medicine[]> {
+  return httpRequest<Medicine[]>(`/medicines/category/${encodeURIComponent(category)}`);
+}
+
+export function getMedicinesByBrand(brand: string): Promise<Medicine[]> {
+  return httpRequest<Medicine[]>(`/medicines/brand/${encodeURIComponent(brand)}`);
+}
+
+export function searchMedicines(q: string): Promise<Medicine[]> {
+  return httpRequest<Medicine[]>("/medicines/search", { query: { q } });
 }

@@ -1,32 +1,16 @@
-import { apiRequest } from "./api";
+import { httpRequest } from "./httpClient";
+import type { AuthResponse, LoginRequest, RegisterRequest } from "@/types";
 
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  username: string;
-  password: string;
-  role: "ADMIN" | "STAFF";
-}
-
-export interface AuthResponse {
-  token: string;
-  username: string;
-  role: string;
-}
-
-export function loginApi(payload: LoginRequest): Promise<AuthResponse> {
-  return apiRequest<AuthResponse>("/auth/login", {
+export function login(payload: LoginRequest): Promise<AuthResponse> {
+  return httpRequest<AuthResponse>("/auth/login", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }
 
-export function registerApi(payload: RegisterRequest): Promise<void> {
-  return apiRequest<void>("/auth/register", {
+export function register(payload: RegisterRequest): Promise<void> {
+  return httpRequest<void>("/auth/register", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }

@@ -5,8 +5,8 @@ import StatCard from "./StatCard";
 import { useToast } from "@/components/ui/use-toast";
 import {
   getDashboardSummary,
-  DashboardSummary as SummaryType,
-} from "@/services/dashboardApi";
+} from "@/services";
+import type { DashboardSummary as SummaryType } from "@/types";
 
 const DashboardSummary = () => {
   const { toast } = useToast();

@@ -8,9 +8,10 @@ import {
   getCustomers,
   deleteCustomer,
   searchCustomers,
+  getSalesByCustomer,
 } from "@/services";
 import { getErrorMessage, isApiError } from "@/services";
-import type { Customer, Page } from "@/types";
+import type { Customer, Page, SaleResponse } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 
 const EMPTY_PAGE: Page<Customer> = {
@@ -29,6 +30,10 @@ const CustomersContainer = () => {
   const [pageData, setPageData] = useState<Page<Customer>>(EMPTY_PAGE);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Customer[] | null>(null);
+
+  const [historyCustomer, setHistoryCustomer] = useState<Customer | null>(null);
+  const [historySales, setHistorySales] = useState<SaleResponse[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const loadCustomers = async () => {
     try {
@@ -103,6 +108,25 @@ const CustomersContainer = () => {
   const totalPages = searchResults ? 1 : pageData.totalPages;
   const currentPage = searchResults ? 0 : pageData.currentPage;
 
+  const openHistory = async (c: Customer) => {
+    setHistoryCustomer(c);
+    setHistorySales([]);
+    setHistoryLoading(true);
+    try {
+      const res = await getSalesByCustomer(c.customerId, 0, 20);
+      setHistorySales(res.items);
+    } catch (e) {
+      toast({ title: "Failed to load purchase history", description: getErrorMessage(e), variant: "destructive" });
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const closeHistory = () => {
+    setHistoryCustomer(null);
+    setHistorySales([]);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <CustomerForm
@@ -158,10 +182,59 @@ const CustomersContainer = () => {
           loading={loading}
           onEdit={setSelectedCustomer}
           onDelete={handleDelete}
+          onViewHistory={openHistory}
           onNext={() => setPage((p) => p + 1)}
           onPrev={() => setPage((p) => Math.max(p - 1, 0))}
         />
       </div>
+
+      {historyCustomer && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={closeHistory}>
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold">{historyCustomer.name} — Purchase History</h2>
+                <p className="text-sm text-muted-foreground">{historyCustomer.phone}</p>
+              </div>
+              <button onClick={closeHistory}><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-6">
+              {historyLoading ? (
+                <p className="text-sm text-muted-foreground">Loading...</p>
+              ) : historySales.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No purchases yet.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="text-left p-2">Bill #</th>
+                      <th className="text-left p-2">Date</th>
+                      <th className="text-right p-2">Total</th>
+                      <th className="text-right p-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historySales.map((s) => (
+                      <tr key={s.saleId} className="border-t">
+                        <td className="p-2 font-mono">#{s.saleId}</td>
+                        <td className="p-2">{s.saleDate}</td>
+                        <td className="p-2 text-right font-medium">₹{s.totalAmount.toFixed(2)}</td>
+                        <td className="p-2 text-right">
+                          {s.returned ? (
+                            <span className="text-red-600 text-xs">Returned</span>
+                          ) : (
+                            <span className="text-green-600 text-xs">Completed</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

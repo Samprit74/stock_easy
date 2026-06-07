@@ -22,6 +22,9 @@ import SuppliersPage from "./pages/Suppliers/SuppliersPage";
 import ReportsPage from "./pages/Reports/ReportsPage";
 import ProfilePage from "./pages/Profile/ProfilePage";
 import UsersPage from "./pages/Users/UsersPage";
+import SalesPage from "./pages/Sales/SalesPage";
+import PurchasesPage from "./pages/Purchases/PurchasesPage";
+import StockToolsPage from "./pages/StockTools/StockToolsPage";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +88,30 @@ const App1 = () => (
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sales"
+              element={
+                <ProtectedRoute>
+                  <SalesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/purchases"
+              element={
+                <ProtectedRoute roles={["ROLE_ADMIN"]}>
+                  <PurchasesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/stock-tools"
+              element={
+                <ProtectedRoute>
+                  <StockToolsPage />
                 </ProtectedRoute>
               }
             />

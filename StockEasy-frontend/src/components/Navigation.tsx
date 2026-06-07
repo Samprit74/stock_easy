@@ -15,9 +15,12 @@ const NAV_ITEMS: NavItem[] = [
   { name: "Sell Stock", path: "/sell-stock" },
   { name: "Medicines", path: "/medicines" },
   { name: "Customers", path: "/customers" },
+  { name: "Sales", path: "/sales" },
+  { name: "Stock Tools", path: "/stock-tools" },
 
   // ADMIN ONLY
   { name: "Suppliers", path: "/suppliers", roles: ["ROLE_ADMIN"] },
+  { name: "Purchases", path: "/purchases", roles: ["ROLE_ADMIN"] },
   { name: "Reports", path: "/reports", roles: ["ROLE_ADMIN"] },
   { name: "Users", path: "/users", roles: ["ROLE_ADMIN"] },
 

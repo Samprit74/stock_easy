@@ -6,19 +6,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Phone, Mail, ShoppingBag } from "lucide-react";
+import { Star, Phone, Mail, ShoppingBag, History } from "lucide-react";
 import type { Customer } from "@/types";
 
 type CustomerCardProps = {
   customer: Customer;
   onEdit: (customer: Customer) => void;
   onDelete: (customerId: number) => void;
+  onViewHistory?: (customer: Customer) => void;
 };
 
 const CustomerCard = ({
   customer,
   onEdit,
   onDelete,
+  onViewHistory,
 }: CustomerCardProps) => {
   return (
     <Card className="w-full">
@@ -54,10 +56,15 @@ const CustomerCard = ({
           </span>
         </div>
 
-        <div className="flex gap-2 pt-3">
+        <div className="flex flex-wrap gap-2 pt-3">
           <Button variant="outline" size="sm" onClick={() => onEdit(customer)}>
             Edit
           </Button>
+          {onViewHistory && (
+            <Button variant="secondary" size="sm" onClick={() => onViewHistory(customer)}>
+              <History className="w-3 h-3 mr-1" /> Bills
+            </Button>
+          )}
           <Button variant="destructive" size="sm" onClick={() => onDelete(customer.customerId)}>
             Delete
           </Button>

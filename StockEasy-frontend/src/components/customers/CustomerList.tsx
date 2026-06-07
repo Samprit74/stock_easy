@@ -12,6 +12,7 @@ type Props = {
   loading: boolean;
   onEdit: (customer: Customer) => void;
   onDelete: (id: number) => void;
+  onViewHistory?: (customer: Customer) => void;
   onNext: () => void;
   onPrev: () => void;
 };
@@ -21,6 +22,7 @@ const CustomerList = ({
   loading,
   onEdit,
   onDelete,
+  onViewHistory,
   onNext,
   onPrev,
 }: Props) => {
@@ -49,6 +51,7 @@ const CustomerList = ({
             customer={customer}
             onEdit={onEdit}
             onDelete={onDelete}
+            onViewHistory={onViewHistory}
           />
         ))}
       </div>

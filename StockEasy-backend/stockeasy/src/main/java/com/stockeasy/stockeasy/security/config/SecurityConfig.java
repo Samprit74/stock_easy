@@ -3,6 +3,7 @@ package com.stockeasy.stockeasy.security.config;
 import com.stockeasy.stockeasy.security.jwt.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,9 +31,30 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // ---------- PUBLIC ----------
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/reports/**").hasRole("ADMIN")
-                        .requestMatchers("/suppliers/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        // ---------- ADMIN ONLY ----------
+                        // Suppliers
+                        .requestMatchers("/api/suppliers/**").hasRole("ADMIN")
+                        // Reports
+                        .requestMatchers("/api/reports/**").hasRole("ADMIN")
+                        // User management (except /me which is for self)
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/*/role").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
+                        // Medicine: only ADMIN can delete or fully update
+                        .requestMatchers(HttpMethod.DELETE, "/api/medicines/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/medicines/**").hasRole("ADMIN")
+                        // Customers: only ADMIN can delete
+                        .requestMatchers(HttpMethod.DELETE, "/api/customers/**").hasRole("ADMIN")
+
+                        // ---------- ANY AUTHENTICATED ROLE (ADMIN or STAFF) ----------
                         .anyRequest().hasAnyRole("ADMIN", "STAFF")
                 )
                 .addFilterBefore(

@@ -1,11 +1,23 @@
 package com.stockeasy.stockeasy.pharmacy.sale.dto.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+
 import java.util.List;
 
 public class SaleRequestDto {
 
+    @NotNull
+    @Valid
     private CustomerPayload customer;
+
+    @PositiveOrZero
     private double totalAmount;
+
+    @NotEmpty
+    @Valid
     private List<SaleItemDto> items;
 
     public SaleRequestDto() {}
@@ -28,8 +40,13 @@ public class SaleRequestDto {
     public void setItems(List<SaleItemDto> items) { this.items = items; }
 
     public static class CustomerPayload {
+
+        @NotNull
         private String name;
+
+        @NotNull
         private String phone;
+
         private String email;
 
         public CustomerPayload() {}

@@ -1,5 +1,6 @@
 package com.stockeasy.stockeasy.pharmacy.supplier.controller;
 
+import com.stockeasy.stockeasy.pharmacy.supplier.dto.response.SupplierResponseDto;
 import com.stockeasy.stockeasy.pharmacy.supplier.entity.Supplier;
 import com.stockeasy.stockeasy.pharmacy.supplier.service.SupplierService;
 import org.springframework.data.domain.Page;
@@ -17,29 +18,30 @@ public class SupplierController {
     }
 
     @PostMapping
-    public Supplier createSupplier(@RequestBody Supplier supplier) {
-        return supplierService.createSupplier(supplier);
+    public SupplierResponseDto createSupplier(@RequestBody Supplier supplier) {
+        return SupplierResponseDto.from(supplierService.createSupplier(supplier));
     }
 
     @GetMapping
-    public Page<Supplier> getAllSuppliers(
+    public Page<SupplierResponseDto> getAllSuppliers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        return supplierService.getAllSuppliers(PageRequest.of(page, size));
+        return supplierService.getAllSuppliers(PageRequest.of(page, size))
+                .map(SupplierResponseDto::from);
     }
 
     @GetMapping("/{id}")
-    public Supplier getSupplierById(@PathVariable Long id) {
-        return supplierService.getSupplierById(id);
+    public SupplierResponseDto getSupplierById(@PathVariable Long id) {
+        return SupplierResponseDto.from(supplierService.getSupplierById(id));
     }
 
     @PutMapping("/{id}")
-    public Supplier updateSupplier(
+    public SupplierResponseDto updateSupplier(
             @PathVariable Long id,
             @RequestBody Supplier supplier
     ) {
-        return supplierService.updateSupplier(id, supplier);
+        return SupplierResponseDto.from(supplierService.updateSupplier(id, supplier));
     }
 
     @DeleteMapping("/{id}")

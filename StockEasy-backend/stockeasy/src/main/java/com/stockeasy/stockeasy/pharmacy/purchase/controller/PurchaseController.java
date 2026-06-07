@@ -12,6 +12,7 @@ import com.stockeasy.stockeasy.pharmacy.stock.repository.PurchaseBatchRepository
 import com.stockeasy.stockeasy.pharmacy.supplier.entity.Supplier;
 import com.stockeasy.stockeasy.pharmacy.supplier.repository.SupplierRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,7 +41,7 @@ public class PurchaseController {
 
     @Transactional
     @PostMapping
-    public String createPurchase(@RequestBody PurchaseRequestDto dto) {
+    public String createPurchase(@Valid @RequestBody PurchaseRequestDto dto) {
 
         Supplier supplier = supplierRepository.findById(dto.getSupplierId())
                 .orElseThrow(() -> new RuntimeException("Supplier not found"));

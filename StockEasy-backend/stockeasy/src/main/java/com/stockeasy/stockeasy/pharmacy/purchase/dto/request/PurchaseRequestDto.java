@@ -1,14 +1,27 @@
 package com.stockeasy.stockeasy.pharmacy.purchase.dto.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDate;
 import java.util.List;
 
 public class PurchaseRequestDto {
 
+    @NotNull
     private Long supplierId;
+
     private String batchNumber;
+
+    @NotNull
     private String invoiceNo;
+
+    @NotNull
     private LocalDate purchaseDate;
+
+    @NotEmpty
+    @Valid
     private List<PurchaseItemDto> items;
 
     public PurchaseRequestDto() {}

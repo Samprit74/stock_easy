@@ -32,4 +32,6 @@ public interface SaleService {
     List<SaleItem> getSaleItems(Long saleId);
 
     List<Sale> getSalesBetween(LocalDate start, LocalDate end);
+
+    Sale returnSale(Long saleId);
 }

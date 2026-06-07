@@ -1,5 +1,6 @@
 package com.stockeasy.stockeasy.pharmacy.sale.service.impl;
 
+import com.stockeasy.stockeasy.pharmacy.customer.repository.CustomerRepository;
 import com.stockeasy.stockeasy.pharmacy.medicine.entity.Medicine;
 import com.stockeasy.stockeasy.pharmacy.sale.entity.Sale;
 import com.stockeasy.stockeasy.pharmacy.sale.entity.SaleItem;
@@ -24,13 +25,16 @@ public class SaleServiceImpl implements SaleService {
     private final SaleRepository saleRepository;
     private final SaleItemRepository saleItemRepository;
     private final BatchItemRepository batchItemRepository;
+    private final CustomerRepository customerRepository;
 
     public SaleServiceImpl(SaleRepository saleRepository,
                            SaleItemRepository saleItemRepository,
-                           BatchItemRepository batchItemRepository) {
+                           BatchItemRepository batchItemRepository,
+                           CustomerRepository customerRepository) {
         this.saleRepository = saleRepository;
         this.saleItemRepository = saleItemRepository;
         this.batchItemRepository = batchItemRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Override
@@ -116,5 +120,31 @@ public class SaleServiceImpl implements SaleService {
     @Override
     public List<Sale> getSalesBetween(LocalDate start, LocalDate end) {
         return saleRepository.findBySaleDateBetween(start, end);
+    }
+
+    @Override
+    @Transactional
+    public Sale returnSale(Long saleId) {
+        Sale sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new RuntimeException("Sale not found: " + saleId));
+
+        if (sale.isReturned()) {
+            throw new RuntimeException("Sale already returned: " + saleId);
+        }
+
+        for (SaleItem si : saleItemRepository.findBySale_SaleId(saleId)) {
+            BatchItem bi = si.getBatchItem();
+            if (bi != null) {
+                bi.setQuantityAvailable(bi.getQuantityAvailable() + si.getQuantitySold());
+                batchItemRepository.save(bi);
+            }
+        }
+
+        if (sale.getCustomer() != null) {
+            customerRepository.decrementOrderCount(sale.getCustomer().getCustomerId());
+        }
+
+        sale.setReturned(true);
+        return saleRepository.save(sale);
     }
 }

@@ -1,13 +1,25 @@
 package com.stockeasy.stockeasy.pharmacy.purchase.dto.request;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+
 import java.time.LocalDate;
 
 public class PurchaseItemDto {
 
+    @NotNull
     private Long medicineId;
+
+    @Positive
     private int quantity;
+
     private LocalDate manufactureDate;
+
+    @NotNull
     private LocalDate expiryDate;
+
+    @PositiveOrZero
     private double buyPrice;
 
     public PurchaseItemDto() {}

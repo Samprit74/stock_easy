@@ -6,13 +6,20 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     Optional<Customer> findByPhone(String phone);
 
+    List<Customer> findByNameContainingIgnoreCase(String name);
+
     @Modifying
     @Query("UPDATE Customer c SET c.totalOrders = c.totalOrders + 1 WHERE c.customerId = :id")
     void incrementOrderCount(@Param("id") Long customerId);
+
+    @Modifying
+    @Query("UPDATE Customer c SET c.totalOrders = c.totalOrders - 1 WHERE c.customerId = :id AND c.totalOrders > 0")
+    void decrementOrderCount(@Param("id") Long customerId);
 }

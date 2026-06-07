@@ -1,9 +1,18 @@
 package com.stockeasy.stockeasy.pharmacy.sale.dto.request;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+
 public class SaleItemDto {
 
+    @NotNull
     private Long medicineId;
+
+    @Positive
     private int quantity;
+
+    @PositiveOrZero
     private double sellPrice;
 
     public SaleItemDto() {}

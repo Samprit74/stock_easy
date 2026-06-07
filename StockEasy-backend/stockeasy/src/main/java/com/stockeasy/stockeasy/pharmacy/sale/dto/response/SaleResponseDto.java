@@ -10,6 +10,7 @@ public class SaleResponseDto {
     private String customerPhone;
     private LocalDate saleDate;
     private double totalAmount;
+    private boolean returned;
     private List<SaleItemResponseDto> items;
 
     public SaleResponseDto() {}
@@ -42,6 +43,9 @@ public class SaleResponseDto {
 
     public double getTotalAmount() { return totalAmount; }
     public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
+
+    public boolean isReturned() { return returned; }
+    public void setReturned(boolean returned) { this.returned = returned; }
 
     public List<SaleItemResponseDto> getItems() { return items; }
     public void setItems(List<SaleItemResponseDto> items) { this.items = items; }

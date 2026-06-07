@@ -11,6 +11,7 @@ import com.stockeasy.stockeasy.pharmacy.sale.entity.Sale;
 import com.stockeasy.stockeasy.pharmacy.sale.service.SaleService;
 import com.stockeasy.stockeasy.user.entity.User;
 import com.stockeasy.stockeasy.user.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +44,7 @@ public class SaleController {
     @PostMapping
     @Transactional
     public String createSale(
-            @RequestBody SaleRequestDto dto,
+            @Valid @RequestBody SaleRequestDto dto,
             @AuthenticationPrincipal UserDetails principal
     ) {
 
@@ -92,5 +93,12 @@ public class SaleController {
         customerRepository.incrementOrderCount(customer.getCustomerId());
 
         return "Sale completed successfully";
+    }
+
+    @PostMapping("/{id}/return")
+    @Transactional
+    public String returnSale(@PathVariable Long id) {
+        saleService.returnSale(id);
+        return "Sale returned and stock restocked";
     }
 }

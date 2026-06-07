@@ -1,9 +1,17 @@
 package com.stockeasy.stockeasy.pharmacy.customer.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
 public class CustomerRequestDto {
 
+    @NotBlank
     private String name;
+
+    @NotBlank
+    @Pattern(regexp = "^[0-9+\\-\\s()]{7,20}$", message = "Invalid phone number")
     private String phone;
+
     private String email;
 
     public CustomerRequestDto() {}

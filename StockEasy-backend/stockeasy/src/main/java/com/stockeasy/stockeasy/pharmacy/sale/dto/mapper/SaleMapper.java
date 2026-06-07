@@ -12,7 +12,7 @@ public final class SaleMapper {
     private SaleMapper() {}
 
     public static SaleResponseDto toDto(Sale s) {
-        return new SaleResponseDto(
+        SaleResponseDto dto = new SaleResponseDto(
                 s.getSaleId(),
                 s.getCustomer() != null ? s.getCustomer().getName() : null,
                 s.getCustomer() != null ? s.getCustomer().getPhone() : null,
@@ -20,6 +20,8 @@ public final class SaleMapper {
                 s.getTotalAmount(),
                 List.of()
         );
+        dto.setReturned(s.isReturned());
+        return dto;
     }
 
     public static SaleResponseDto toDtoWithItems(Sale s, List<SaleItem> items) {

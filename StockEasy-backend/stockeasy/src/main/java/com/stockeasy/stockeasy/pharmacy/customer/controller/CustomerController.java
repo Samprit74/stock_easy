@@ -1,11 +1,12 @@
 package com.stockeasy.stockeasy.pharmacy.customer.controller;
 
 import com.stockeasy.stockeasy.pharmacy.customer.dto.request.CustomerRequestDto;
-import com.stockeasy.stockeasy.pharmacy.customer.dto.response.CustomerSummaryDto;
+import com.stockeasy.stockeasy.pharmacy.customer.dto.response.CustomerResponseDto;
 import com.stockeasy.stockeasy.pharmacy.customer.entity.Customer;
 import com.stockeasy.stockeasy.pharmacy.customer.repository.CustomerRepository;
 import com.stockeasy.stockeasy.pharmacy.customer.service.CustomerService;
 import com.stockeasy.stockeasy.shared.exception.ResourceNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
@@ -24,55 +25,55 @@ public class CustomerController {
     }
 
     @PostMapping
-    public Customer createCustomer(@RequestBody CustomerRequestDto dto) {
+    public CustomerResponseDto createCustomer(@Valid @RequestBody CustomerRequestDto dto) {
         Customer customer = new Customer(
                 dto.getName(),
                 dto.getPhone(),
                 dto.getEmail()
         );
-        return customerService.createOrGetCustomer(customer);
+        return CustomerResponseDto.from(customerService.createOrGetCustomer(customer));
     }
 
     @GetMapping
-    public Page<Customer> getAllCustomers(
+    public Page<CustomerResponseDto> getAllCustomers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        return customerService.getAllCustomers(PageRequest.of(page, size));
+        return customerService.getAllCustomers(PageRequest.of(page, size))
+                .map(CustomerResponseDto::from);
     }
 
     @GetMapping("/{id}")
-    public Customer getCustomerById(@PathVariable Long id) {
-        return customerService.getCustomerById(id);
+    public CustomerResponseDto getCustomerById(@PathVariable Long id) {
+        return CustomerResponseDto.from(customerService.getCustomerById(id));
     }
 
     @GetMapping("/by-phone/{phone}")
-    public CustomerSummaryDto getByPhone(@PathVariable String phone) {
+    public CustomerResponseDto getByPhone(@PathVariable String phone) {
         Customer customer = customerRepository.findByPhone(phone)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Customer not found: " + phone));
-        return new CustomerSummaryDto(
-                customer.getCustomerId(),
-                customer.getName(),
-                customer.getPhone(),
-                customer.getEmail(),
-                customer.getTotalOrders(),
-                customer.getRegularThreshold(),
-                customer.isRegular()
-        );
+        return CustomerResponseDto.from(customer);
+    }
+
+    @GetMapping("/search")
+    public java.util.List<CustomerResponseDto> search(@RequestParam String q) {
+        return customerRepository.findByNameContainingIgnoreCase(q).stream()
+                .map(CustomerResponseDto::from)
+                .toList();
     }
 
     @PutMapping("/{id}")
-    public Customer updateCustomer(
+    public CustomerResponseDto updateCustomer(
             @PathVariable Long id,
-            @RequestBody CustomerRequestDto dto
+            @Valid @RequestBody CustomerRequestDto dto
     ) {
         Customer customer = new Customer(
                 dto.getName(),
                 dto.getPhone(),
                 dto.getEmail()
         );
-        return customerService.updateCustomer(id, customer);
+        return CustomerResponseDto.from(customerService.updateCustomer(id, customer));
     }
 
     @DeleteMapping("/{id}")

@@ -26,6 +26,9 @@ public class Sale {
     private LocalDate saleDate;
     private double totalAmount;
 
+    @Column(nullable = false)
+    private boolean returned;
+
     public Sale() {}
 
     public Sale(Customer customer, LocalDate saleDate, double totalAmount) {
@@ -72,5 +75,13 @@ public class Sale {
 
     public void setTotalAmount(double totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public boolean isReturned() {
+        return returned;
+    }
+
+    public void setReturned(boolean returned) {
+        this.returned = returned;
     }
 }

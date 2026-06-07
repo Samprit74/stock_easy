@@ -1,5 +1,6 @@
 package com.stockeasy.stockeasy.pharmacy.medicine.controller;
 
+import com.stockeasy.stockeasy.pharmacy.medicine.dto.response.MedicineResponseDto;
 import com.stockeasy.stockeasy.pharmacy.medicine.entity.Medicine;
 import com.stockeasy.stockeasy.pharmacy.medicine.service.MedicineService;
 import org.springframework.data.domain.Page;
@@ -19,29 +20,30 @@ public class MedicineController {
     }
 
     @PostMapping
-    public Medicine createMedicine(@RequestBody Medicine medicine) {
-        return medicineService.createMedicine(medicine);
+    public MedicineResponseDto createMedicine(@RequestBody Medicine medicine) {
+        return MedicineResponseDto.from(medicineService.createMedicine(medicine));
     }
 
     @GetMapping
-    public Page<Medicine> getAllMedicines(
+    public Page<MedicineResponseDto> getAllMedicines(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        return medicineService.getAllMedicines(PageRequest.of(page, size));
+        return medicineService.getAllMedicines(PageRequest.of(page, size))
+                .map(MedicineResponseDto::from);
     }
 
     @GetMapping("/{id}")
-    public Medicine getMedicineById(@PathVariable Long id) {
-        return medicineService.getMedicineById(id);
+    public MedicineResponseDto getMedicineById(@PathVariable Long id) {
+        return MedicineResponseDto.from(medicineService.getMedicineById(id));
     }
 
     @PutMapping("/{id}")
-    public Medicine updateMedicine(
+    public MedicineResponseDto updateMedicine(
             @PathVariable Long id,
             @RequestBody Medicine medicine
     ) {
-        return medicineService.updateMedicine(id, medicine);
+        return MedicineResponseDto.from(medicineService.updateMedicine(id, medicine));
     }
 
     @DeleteMapping("/{id}")
@@ -50,17 +52,20 @@ public class MedicineController {
     }
 
     @GetMapping("/category/{category}")
-    public List<Medicine> getByCategory(@PathVariable String category) {
-        return medicineService.getByCategory(category);
+    public List<MedicineResponseDto> getByCategory(@PathVariable String category) {
+        return medicineService.getByCategory(category).stream()
+                .map(MedicineResponseDto::from).toList();
     }
 
     @GetMapping("/brand/{brand}")
-    public List<Medicine> getByBrand(@PathVariable String brand) {
-        return medicineService.getByBrand(brand);
+    public List<MedicineResponseDto> getByBrand(@PathVariable String brand) {
+        return medicineService.getByBrand(brand).stream()
+                .map(MedicineResponseDto::from).toList();
     }
 
     @GetMapping("/search")
-    public List<Medicine> search(@RequestParam String q) {
-        return medicineService.searchByName(q);
+    public List<MedicineResponseDto> search(@RequestParam String q) {
+        return medicineService.searchByName(q).stream()
+                .map(MedicineResponseDto::from).toList();
     }
 }

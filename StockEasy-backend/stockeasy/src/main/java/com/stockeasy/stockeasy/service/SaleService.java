@@ -18,7 +18,8 @@ public interface SaleService {
             Medicine medicine,
             int quantity,
             Sale sale,
-            double sellPrice
+            double sellPrice,
+            boolean freshestFirst
     );
 
 

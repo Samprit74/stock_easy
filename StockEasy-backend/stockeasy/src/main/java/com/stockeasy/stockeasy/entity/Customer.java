@@ -15,6 +15,12 @@ public class Customer {
     private String phone;
     private String email;
 
+    @Column(nullable = false)
+    private int totalOrders;
+
+    @Column(nullable = false)
+    private int regularThreshold = 5;
+
     public Customer() {}
 
     public Customer(String name, String phone, String email) {
@@ -53,5 +59,26 @@ public class Customer {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public int getTotalOrders() {
+        return totalOrders;
+    }
+
+    public void setTotalOrders(int totalOrders) {
+        this.totalOrders = totalOrders;
+    }
+
+    public int getRegularThreshold() {
+        return regularThreshold;
+    }
+
+    public void setRegularThreshold(int regularThreshold) {
+        this.regularThreshold = regularThreshold;
+    }
+
+    @Transient
+    public boolean isRegular() {
+        return totalOrders >= regularThreshold;
     }
 }

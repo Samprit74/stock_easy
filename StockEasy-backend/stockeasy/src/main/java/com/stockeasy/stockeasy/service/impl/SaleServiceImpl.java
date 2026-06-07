@@ -36,13 +36,19 @@ public class SaleServiceImpl implements SaleService {
 
     @Override
     @Transactional
-    public void sellMedicine(Medicine medicine, int quantity, Sale sale, double sellPrice) {
+    public void sellMedicine(Medicine medicine,
+                             int quantity,
+                             Sale sale,
+                             double sellPrice,
+                             boolean freshestFirst) {
 
-        List<BatchItem> batches =
-                batchItemRepository
-                        .findByMedicineAndQuantityAvailableGreaterThanAndExpiryDateAfterOrderByExpiryDateAsc(
-                                medicine, 0, LocalDate.now()
-                        );
+        List<BatchItem> batches = freshestFirst
+                ? batchItemRepository
+                    .findByMedicineAndQuantityAvailableGreaterThanAndExpiryDateAfterOrderByExpiryDateDesc(
+                            medicine, 0, LocalDate.now())
+                : batchItemRepository
+                    .findByMedicineAndQuantityAvailableGreaterThanAndExpiryDateAfterOrderByExpiryDateAsc(
+                            medicine, 0, LocalDate.now());
 
         double basePrice = sellPrice > 0
                 ? sellPrice

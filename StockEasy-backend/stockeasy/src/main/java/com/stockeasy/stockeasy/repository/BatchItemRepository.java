@@ -20,6 +20,14 @@ public interface BatchItemRepository extends JpaRepository<BatchItem, Long> {
             LocalDate date
     );
 
+    // Freshest-first (used for regular customers)
+    List<BatchItem>
+    findByMedicineAndQuantityAvailableGreaterThanAndExpiryDateAfterOrderByExpiryDateDesc(
+            Medicine medicine,
+            int quantity,
+            LocalDate date
+    );
+
     // expired stock
     List<BatchItem>
     findByExpiryDateBeforeAndQuantityAvailableGreaterThan(

@@ -2,6 +2,7 @@ package com.stockeasy.stockeasy.controller;
 
 import com.stockeasy.stockeasy.dto.request.CustomerRequestDto;
 import com.stockeasy.stockeasy.entity.Customer;
+import com.stockeasy.stockeasy.repository.CustomerRepository;
 import com.stockeasy.stockeasy.service.CustomerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,9 +13,12 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final CustomerRepository customerRepository;
 
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(CustomerService customerService,
+                              CustomerRepository customerRepository) {
         this.customerService = customerService;
+        this.customerRepository = customerRepository;
     }
 
     // CREATE or GET existing customer by phone
@@ -42,6 +46,25 @@ public class CustomerController {
     @GetMapping("/{id}")
     public Customer getCustomerById(@PathVariable Long id) {
         return customerService.getCustomerById(id);
+    }
+
+    // GET customer summary by phone (used to detect regular customers at sale time)
+    @GetMapping("/by-phone/{phone}")
+    public com.stockeasy.stockeasy.dto.response.CustomerSummaryDto getByPhone(
+            @PathVariable String phone
+    ) {
+        Customer customer = customerRepository.findByPhone(phone)
+                .orElseThrow(() -> new com.stockeasy.stockeasy.exception.ResourceNotFoundException(
+                        "Customer not found: " + phone));
+        return new com.stockeasy.stockeasy.dto.response.CustomerSummaryDto(
+                customer.getCustomerId(),
+                customer.getName(),
+                customer.getPhone(),
+                customer.getEmail(),
+                customer.getTotalOrders(),
+                customer.getRegularThreshold(),
+                customer.isRegular()
+        );
     }
 
     // UPDATE customer

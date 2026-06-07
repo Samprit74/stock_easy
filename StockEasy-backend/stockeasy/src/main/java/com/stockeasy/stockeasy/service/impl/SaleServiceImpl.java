@@ -4,6 +4,7 @@ import com.stockeasy.stockeasy.entity.*;
 import com.stockeasy.stockeasy.repository.*;
 import com.stockeasy.stockeasy.service.SaleService;
 import com.stockeasy.stockeasy.user.entity.User;
+import com.stockeasy.stockeasy.util.DiscountCalculator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,6 @@ public class SaleServiceImpl implements SaleService {
         return saleRepository.save(sale);
     }
 
-    // FEFO logic
     @Override
     @Transactional
     public void sellMedicine(Medicine medicine, int quantity, Sale sale, double sellPrice) {
@@ -43,6 +43,10 @@ public class SaleServiceImpl implements SaleService {
                         .findByMedicineAndQuantityAvailableGreaterThanAndExpiryDateAfterOrderByExpiryDateAsc(
                                 medicine, 0, LocalDate.now()
                         );
+
+        double basePrice = sellPrice > 0
+                ? sellPrice
+                : (medicine.getDefaultSellPrice() != null ? medicine.getDefaultSellPrice() : 0.0);
 
         int remainingQty = quantity;
 
@@ -55,11 +59,14 @@ public class SaleServiceImpl implements SaleService {
             batchItem.setQuantityAvailable(available - deductQty);
             batchItemRepository.save(batchItem);
 
+            double finalPrice = DiscountCalculator.apply(
+                    batchItem.getExpiryDate(), basePrice);
+
             SaleItem saleItem = new SaleItem(
                     sale,
                     batchItem,
                     deductQty,
-                    sellPrice
+                    finalPrice
             );
             saleItemRepository.save(saleItem);
 

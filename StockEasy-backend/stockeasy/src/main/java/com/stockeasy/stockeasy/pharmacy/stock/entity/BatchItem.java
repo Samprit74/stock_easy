@@ -2,7 +2,6 @@ package com.stockeasy.stockeasy.pharmacy.stock.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.stockeasy.stockeasy.pharmacy.medicine.entity.Medicine;
-import com.stockeasy.stockeasy.pharmacy.purchase.entity.PurchaseBatch;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 

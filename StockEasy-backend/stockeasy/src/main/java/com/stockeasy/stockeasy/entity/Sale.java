@@ -1,5 +1,7 @@
 package com.stockeasy.stockeasy.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.stockeasy.stockeasy.user.entity.User;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -14,6 +16,15 @@ public class Sale {
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;
+
+    /**
+     * The staff/admin user who created this sale. Nullable so legacy
+     * rows / tests aren't broken, but every new sale MUST set this.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id")
+    @JsonIgnore
+    private User createdBy;
 
     private LocalDate saleDate;
     private double totalAmount;
@@ -40,6 +51,14 @@ public class Sale {
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 
     public LocalDate getSaleDate() {

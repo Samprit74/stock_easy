@@ -6,6 +6,10 @@ import com.stockeasy.stockeasy.entity.*;
 import com.stockeasy.stockeasy.repository.MedicineRepository;
 import com.stockeasy.stockeasy.service.CustomerService;
 import com.stockeasy.stockeasy.service.SaleService;
+import com.stockeasy.stockeasy.user.entity.User;
+import com.stockeasy.stockeasy.user.repository.UserRepository;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -17,17 +21,23 @@ public class SaleController {
     private final SaleService saleService;
     private final CustomerService customerService;
     private final MedicineRepository medicineRepository;
+    private final UserRepository userRepository;
 
     public SaleController(SaleService saleService,
                           CustomerService customerService,
-                          MedicineRepository medicineRepository) {
+                          MedicineRepository medicineRepository,
+                          UserRepository userRepository) {
         this.saleService = saleService;
         this.customerService = customerService;
         this.medicineRepository = medicineRepository;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
-    public String createSale(@RequestBody SaleRequestDto dto) {
+    public String createSale(
+            @RequestBody SaleRequestDto dto,
+            @AuthenticationPrincipal UserDetails principal
+    ) {
 
         Customer customer = customerService.createOrGetCustomer(
                 new Customer(
@@ -42,6 +52,13 @@ public class SaleController {
                 LocalDate.now(),
                 dto.getTotalAmount()
         );
+
+        // attach the logged-in user as the creator
+        if (principal != null) {
+            User user = userRepository.findByUsername(principal.getUsername())
+                    .orElse(null);
+            sale.setCreatedBy(user);
+        }
 
         Sale savedSale = saleService.createSale(sale);
 

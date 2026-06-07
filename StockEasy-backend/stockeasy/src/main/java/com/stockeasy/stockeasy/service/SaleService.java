@@ -3,6 +3,7 @@ package com.stockeasy.stockeasy.service;
 import com.stockeasy.stockeasy.entity.Medicine;
 import com.stockeasy.stockeasy.entity.Sale;
 import com.stockeasy.stockeasy.entity.SaleItem;
+import com.stockeasy.stockeasy.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -22,6 +23,10 @@ public interface SaleService {
 
 
     Page<Sale> getSales(Pageable pageable);
+
+    Page<Sale> getSalesByUser(User user, Pageable pageable);
+
+    Page<Sale> getSalesByCustomer(Long customerId, Pageable pageable);
 
     List<SaleItem> getSaleItems(Long saleId);
 

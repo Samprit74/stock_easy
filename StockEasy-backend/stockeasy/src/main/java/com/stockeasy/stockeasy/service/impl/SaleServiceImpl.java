@@ -3,6 +3,7 @@ package com.stockeasy.stockeasy.service.impl;
 import com.stockeasy.stockeasy.entity.*;
 import com.stockeasy.stockeasy.repository.*;
 import com.stockeasy.stockeasy.service.SaleService;
+import com.stockeasy.stockeasy.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -76,6 +77,17 @@ public class SaleServiceImpl implements SaleService {
     @Override
     public Page<Sale> getSales(Pageable pageable) {
         return saleRepository.findAllByOrderBySaleDateDesc(pageable);
+    }
+
+    @Override
+    public Page<Sale> getSalesByUser(User user, Pageable pageable) {
+        return saleRepository.findByCreatedByOrderBySaleDateDesc(user, pageable);
+    }
+
+    @Override
+    public Page<Sale> getSalesByCustomer(Long customerId, Pageable pageable) {
+        return saleRepository.findByCustomer_CustomerIdOrderBySaleDateDesc(
+                customerId, pageable);
     }
 
     @Override

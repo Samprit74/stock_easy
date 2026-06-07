@@ -19,6 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   // ADMIN ONLY
   { name: "Suppliers", path: "/suppliers", roles: ["ROLE_ADMIN"] },
   { name: "Reports", path: "/reports", roles: ["ROLE_ADMIN"] },
+  { name: "Users", path: "/users", roles: ["ROLE_ADMIN"] },
 
   { name: "Profile", path: "/profile" },
 ];

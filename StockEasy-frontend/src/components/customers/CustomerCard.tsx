@@ -5,7 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Customer } from "@/services/customerApi";
+import { Badge } from "@/components/ui/badge";
+import { Star, Phone, Mail, ShoppingBag } from "lucide-react";
+import type { Customer } from "@/types";
 
 type CustomerCardProps = {
   customer: Customer;
@@ -21,34 +23,42 @@ const CustomerCard = ({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-base">
-          {customer.name}
-        </CardTitle>
+        <div className="flex justify-between items-start">
+          <CardTitle className="text-base">{customer.name}</CardTitle>
+          {customer.regular && (
+            <Badge className="bg-amber-500 hover:bg-amber-600 gap-1">
+              <Star className="w-3 h-3" /> Regular
+            </Badge>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-2 text-sm">
-        <div>
-          <strong>Phone:</strong> {customer.phone}
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Phone className="w-3.5 h-3.5" />
+          <span>{customer.phone}</span>
         </div>
-
-        <div>
-          <strong>Email:</strong> {customer.email || "-"}
+        {customer.email && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Mail className="w-3.5 h-3.5" />
+            <span>{customer.email}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <ShoppingBag className="w-3.5 h-3.5" />
+          <span>
+            {customer.totalOrders} order(s)
+            {customer.regular && (
+              <span className="text-xs"> (≥{customer.regularThreshold} = regular)</span>
+            )}
+          </span>
         </div>
 
         <div className="flex gap-2 pt-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onEdit(customer)}
-          >
+          <Button variant="outline" size="sm" onClick={() => onEdit(customer)}>
             Edit
           </Button>
-
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => onDelete(customer.customerId)}
-          >
+          <Button variant="destructive" size="sm" onClick={() => onDelete(customer.customerId)}>
             Delete
           </Button>
         </div>

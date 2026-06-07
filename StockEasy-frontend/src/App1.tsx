@@ -21,6 +21,7 @@ import CustomersPage from "./pages/Customers/CustomersPage";
 import SuppliersPage from "./pages/Suppliers/SuppliersPage";
 import ReportsPage from "./pages/Reports/ReportsPage";
 import ProfilePage from "./pages/Profile/ProfilePage";
+import UsersPage from "./pages/Users/UsersPage";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,14 @@ const App1 = () => (
               element={
                 <ProtectedRoute roles={["ROLE_ADMIN"]}>
                   <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute roles={["ROLE_ADMIN"]}>
+                  <UsersPage />
                 </ProtectedRoute>
               }
             />

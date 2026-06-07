@@ -60,7 +60,15 @@ public class BatchItemServiceImpl implements BatchItemService {
 
     @Override
     public List<LowStockDto> getLowStockMedicines(int threshold) {
-        return batchItemRepository.findLowStockMedicines(threshold);
+        return batchItemRepository.findLowStockMedicines(threshold).stream()
+                .map(p -> new LowStockDto(
+                        p.getMedicineId(),
+                        p.getMedicineName(),
+                        p.getBrand(),
+                        p.getCategory(),
+                        p.getTotalAvailable() == null ? 0 : p.getTotalAvailable().intValue(),
+                        threshold))
+                .toList();
     }
 
     @Override

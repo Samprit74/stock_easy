@@ -4,17 +4,33 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    @Value("${stockeasy.jwt.secret:}")
+    private String configuredSecret;
+
+    private Key key;
     private final long EXPIRATION = 1000 * 60 * 60 * 24; // 24 hours
+
+    @PostConstruct
+    public void init() {
+        if (configuredSecret != null && !configuredSecret.isBlank()) {
+            byte[] decoded = Base64.getDecoder().decode(configuredSecret);
+            this.key = Keys.hmacShaKeyFor(decoded);
+        } else {
+            this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        }
+    }
 
     public String generateToken(UserDetails userDetails) {
 

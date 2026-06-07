@@ -1,7 +1,6 @@
 package com.stockeasy.stockeasy.pharmacy.stock.repository;
 
 import com.stockeasy.stockeasy.pharmacy.medicine.entity.Medicine;
-import com.stockeasy.stockeasy.pharmacy.stock.dto.response.LowStockDto;
 import com.stockeasy.stockeasy.pharmacy.stock.entity.BatchItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -58,21 +57,27 @@ public interface BatchItemRepository extends JpaRepository<BatchItem, Long> {
     long getTotalAvailableStock();
 
     @Query("""
-            SELECT new com.stockeasy.stockeasy.pharmacy.stock.dto.response.LowStockDto(
-                m.medicineId,
-                m.medicineName,
-                m.brand,
-                m.category,
-                CAST(COALESCE(SUM(b.quantityAvailable), 0) AS int),
-                :threshold)
+            SELECT m.medicineId AS medicineId,
+                   m.medicineName AS medicineName,
+                   m.brand AS brand,
+                   m.category AS category,
+                   COALESCE(SUM(b.quantityAvailable), 0L) AS totalAvailable
             FROM Medicine m
             LEFT JOIN BatchItem b
                 ON b.medicine = m
                 AND b.quantityAvailable > 0
                 AND b.expiryDate > CURRENT_DATE
             GROUP BY m.medicineId, m.medicineName, m.brand, m.category
-            HAVING COALESCE(SUM(b.quantityAvailable), 0) <= :threshold
-            ORDER BY COALESCE(SUM(b.quantityAvailable), 0) ASC
+            HAVING COALESCE(SUM(b.quantityAvailable), 0L) <= :threshold
+            ORDER BY COALESCE(SUM(b.quantityAvailable), 0L) ASC
             """)
-    List<LowStockDto> findLowStockMedicines(@Param("threshold") int threshold);
+    List<LowStockProjection> findLowStockMedicines(@Param("threshold") int threshold);
+
+    interface LowStockProjection {
+        Long getMedicineId();
+        String getMedicineName();
+        String getBrand();
+        String getCategory();
+        Long getTotalAvailable();
+    }
 }

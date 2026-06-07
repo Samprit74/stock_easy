@@ -31,35 +31,37 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function readPersistedAuth(): { token: string | null; user: StoredUser | null } {
+  return { token: getToken(), user: getUser() };
+}
+
 /* =======================
    PROVIDER
 ======================= */
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<StoredUser | null>(null);
+  const [{ isAuthenticated, user }, setAuth] = useState<{
+    isAuthenticated: boolean;
+    user: StoredUser | null;
+  }>(() => {
+    const { token, user } = readPersistedAuth();
+    return { isAuthenticated: !!token && !!user, user };
+  });
 
   useEffect(() => {
-    const token = getToken();
-    const storedUser = getUser();
-
-    if (token && storedUser) {
-      setIsAuthenticated(true);
-      setUser(storedUser);
-    }
+    const { token, user } = readPersistedAuth();
+    setAuth({ isAuthenticated: !!token && !!user, user });
   }, []);
 
   const login = (token: string, user: StoredUser) => {
     saveToken(token);
     saveUser(user);
-    setIsAuthenticated(true);
-    setUser(user);
+    setAuth({ isAuthenticated: true, user });
   };
 
   const logout = () => {
     clearAuth();
-    setIsAuthenticated(false);
-    setUser(null);
+    setAuth({ isAuthenticated: false, user: null });
   };
 
   return (

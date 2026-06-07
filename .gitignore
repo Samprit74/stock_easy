@@ -73,9 +73,7 @@ desktop.ini
 ehthumbs.db
 $RECYCLE.BIN/
 
-# ===============================
-# Claude Code / AI tooling
-# ===============================
+
 .claude/
 .cursor/
 .aider*

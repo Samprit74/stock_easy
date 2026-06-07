@@ -1,5 +1,6 @@
 package com.stockeasy.stockeasy.service.impl;
 
+import com.stockeasy.stockeasy.dto.response.LowStockDto;
 import com.stockeasy.stockeasy.entity.BatchItem;
 import com.stockeasy.stockeasy.repository.BatchItemRepository;
 import com.stockeasy.stockeasy.service.BatchItemService;
@@ -53,5 +54,10 @@ public class BatchItemServiceImpl implements BatchItemService {
     @Override
     public List<BatchItem> getByBatch(Long batchId) {
         return batchItemRepository.findByBatch_BatchId(batchId);
+    }
+
+    @Override
+    public List<LowStockDto> getLowStockMedicines(int threshold) {
+        return batchItemRepository.findLowStockMedicines(threshold);
     }
 }

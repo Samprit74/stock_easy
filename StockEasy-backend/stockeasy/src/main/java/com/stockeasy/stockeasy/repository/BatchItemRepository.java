@@ -1,9 +1,11 @@
 package com.stockeasy.stockeasy.repository;
 
+import com.stockeasy.stockeasy.dto.response.LowStockDto;
 import com.stockeasy.stockeasy.entity.BatchItem;
 import com.stockeasy.stockeasy.entity.Medicine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -53,4 +55,28 @@ public interface BatchItemRepository extends JpaRepository<BatchItem, Long> {
     // total stock
     @Query("SELECT COALESCE(SUM(b.quantityAvailable), 0) FROM BatchItem b")
     long getTotalAvailableStock();
+
+    /**
+     * Medicines whose total non-expired stock across all batches
+     * is at or below the given threshold. Sorted ascending by stock
+     * so the most critical items come first.
+     */
+    @Query("""
+            SELECT new com.stockeasy.stockeasy.dto.response.LowStockDto(
+                m.medicineId,
+                m.medicineName,
+                m.brand,
+                m.category,
+                CAST(COALESCE(SUM(b.quantityAvailable), 0) AS int),
+                :threshold)
+            FROM Medicine m
+            LEFT JOIN BatchItem b
+                ON b.medicine = m
+                AND b.quantityAvailable > 0
+                AND b.expiryDate > CURRENT_DATE
+            GROUP BY m.medicineId, m.medicineName, m.brand, m.category
+            HAVING COALESCE(SUM(b.quantityAvailable), 0) <= :threshold
+            ORDER BY COALESCE(SUM(b.quantityAvailable), 0) ASC
+            """)
+    List<LowStockDto> findLowStockMedicines(@Param("threshold") int threshold);
 }

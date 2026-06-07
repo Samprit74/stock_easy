@@ -1,5 +1,6 @@
 package com.stockeasy.stockeasy.controller;
 
+import com.stockeasy.stockeasy.dto.response.LowStockDto;
 import com.stockeasy.stockeasy.entity.BatchItem;
 import com.stockeasy.stockeasy.service.BatchItemService;
 import org.springframework.web.bind.annotation.*;
@@ -39,5 +40,12 @@ public class BatchItemController {
     @GetMapping("/batch/{batchId}")
     public List<BatchItem> getByBatch(@PathVariable Long batchId) {
         return batchItemService.getByBatch(batchId);
+    }
+
+    @GetMapping("/low-stock")
+    public List<LowStockDto> getLowStock(
+            @RequestParam(defaultValue = "10") int threshold
+    ) {
+        return batchItemService.getLowStockMedicines(threshold);
     }
 }

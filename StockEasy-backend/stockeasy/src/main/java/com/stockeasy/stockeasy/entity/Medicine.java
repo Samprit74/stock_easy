@@ -14,6 +14,8 @@ public class Medicine {
     private String brand;
     private String category;
 
+    private Double defaultSellPrice;
+
     public Medicine() {}
 
     public Medicine(String medicineName, String brand, String category) {
@@ -52,5 +54,13 @@ public class Medicine {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Double getDefaultSellPrice() {
+        return defaultSellPrice;
+    }
+
+    public void setDefaultSellPrice(Double defaultSellPrice) {
+        this.defaultSellPrice = defaultSellPrice;
     }
 }

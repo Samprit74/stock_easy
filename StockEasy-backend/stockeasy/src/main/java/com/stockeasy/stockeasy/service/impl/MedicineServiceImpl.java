@@ -43,6 +43,7 @@ public class MedicineServiceImpl implements MedicineService {
         existing.setMedicineName(medicine.getMedicineName());
         existing.setBrand(medicine.getBrand());
         existing.setCategory(medicine.getCategory());
+        existing.setDefaultSellPrice(medicine.getDefaultSellPrice());
         return medicineRepository.save(existing);
     }
 

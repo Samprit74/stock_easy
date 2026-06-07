@@ -53,7 +53,6 @@ public class SaleController {
                 dto.getTotalAmount()
         );
 
-        // attach the logged-in user as the creator
         if (principal != null) {
             User user = userRepository.findByUsername(principal.getUsername())
                     .orElse(null);
@@ -66,11 +65,16 @@ public class SaleController {
             Medicine medicine = medicineRepository.findById(item.getMedicineId())
                     .orElseThrow(() -> new RuntimeException("Medicine not found"));
 
+            double sellPrice = item.getSellPrice();
+            if (sellPrice <= 0 && medicine.getDefaultSellPrice() != null) {
+                sellPrice = medicine.getDefaultSellPrice();
+            }
+
             saleService.sellMedicine(
                     medicine,
                     item.getQuantity(),
                     savedSale,
-                    item.getSellPrice()
+                    sellPrice
             );
         }
 

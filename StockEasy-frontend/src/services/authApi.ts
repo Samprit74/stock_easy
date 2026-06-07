@@ -14,3 +14,6 @@ export function register(payload: RegisterRequest): Promise<void> {
     body: payload,
   });
 }
+
+export const loginApi = login;
+export const registerApi = register;

@@ -7,7 +7,8 @@ import type {
   UpdateSupplierRequest,
 } from "@/types";
 
-export type { Supplier, CreateSupplierRequest, UpdateSupplierRequest } from "@/types";
+export type { Supplier, CreateSupplierRequest, UpdateSupplierRequest, Page } from "@/types";
+export type PaginatedSuppliers = Page<Supplier>;
 
 function toPage<T>(res: PageResponse<T>, fallbackPage: number): Page<T> {
   return {

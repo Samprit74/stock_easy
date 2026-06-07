@@ -7,7 +7,8 @@ import type {
   UpdateMedicineRequest,
 } from "@/types";
 
-export type { Medicine, CreateMedicineRequest, UpdateMedicineRequest } from "@/types";
+export type { Medicine, CreateMedicineRequest, UpdateMedicineRequest, Page } from "@/types";
+export type PaginatedMedicines = Page<Medicine>;
 
 function toPage<T>(res: PageResponse<T>, fallbackPage: number): Page<T> {
   return {

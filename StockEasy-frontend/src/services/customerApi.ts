@@ -7,7 +7,8 @@ import type {
   UpdateCustomerRequest,
 } from "@/types";
 
-export type { Customer, CreateCustomerRequest, UpdateCustomerRequest } from "@/types";
+export type { Customer, CreateCustomerRequest, UpdateCustomerRequest, Page } from "@/types";
+export type PaginatedCustomers = Page<Customer>;
 
 function toPage<T>(res: PageResponse<T>, fallbackPage: number): Page<T> {
   return {

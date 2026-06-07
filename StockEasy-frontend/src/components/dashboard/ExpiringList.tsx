@@ -62,7 +62,7 @@ const ExpiringList = () => {
               key={item.batchItemId}
               className="flex justify-between border-b pb-1"
             >
-              <span>{item.medicine.medicineName}</span>
+              <span>{item.medicineName ?? "?"}</span>
               <span className="text-red-600">
                 Exp: {item.expiryDate} | Qty: {item.quantityAvailable}
               </span>

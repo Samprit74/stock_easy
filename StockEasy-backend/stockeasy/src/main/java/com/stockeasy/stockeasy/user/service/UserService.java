@@ -1,6 +1,6 @@
 package com.stockeasy.stockeasy.user.service;
 
-import com.stockeasy.stockeasy.exception.ResourceNotFoundException;
+import com.stockeasy.stockeasy.shared.exception.ResourceNotFoundException;
 import com.stockeasy.stockeasy.user.dto.UpdateProfileRequest;
 import com.stockeasy.stockeasy.user.dto.UpdateRoleRequest;
 import com.stockeasy.stockeasy.user.entity.User;
